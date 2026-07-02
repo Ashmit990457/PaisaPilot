@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "375672875232",
+    "project_id": "paisapilot-fa118",
+    "storage_bucket": "paisapilot-fa118.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:375672875232:android:060d7569eb3008a834c885",
+        "android_client_info": {
+          "package_name": "com.example.paisapilot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_k2vQ2PUuP0Z8faC5PoIWOvLEQQFOTVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
