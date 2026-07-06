@@ -73,6 +73,8 @@ public class ReportsActivity extends BaseActivity {
         // Animate content
         binding.scrollViewReport.setAlpha(0f);
         binding.scrollViewReport.animate().alpha(1f).setDuration(300).start();
+        binding.layoutEmptyState.setAlpha(0f);
+        binding.layoutEmptyState.animate().alpha(1f).setDuration(300).start();
     }
 
     private void updateNavigatorUI() {
@@ -89,15 +91,8 @@ public class ReportsActivity extends BaseActivity {
     }
 
     private void loadReport() {
-        Calendar current = Calendar.getInstance();
-        boolean isCurrentMonth = selectedMonthCalendar.get(Calendar.MONTH) == current.get(Calendar.MONTH) &&
-                selectedMonthCalendar.get(Calendar.YEAR) == current.get(Calendar.YEAR);
-
-        if (isCurrentMonth) {
-            viewModel.loadMonthlyReport();
-        } else {
-            viewModel.loadArchivedReport(monthIdFormat.format(selectedMonthCalendar.getTime()));
-        }
+        String monthId = monthIdFormat.format(selectedMonthCalendar.getTime());
+        viewModel.loadReport(monthId);
     }
 
     private void observeViewModel() {
@@ -106,19 +101,34 @@ public class ReportsActivity extends BaseActivity {
             switch (resource.getStatus()) {
                 case LOADING:
                     binding.progressReport.setVisibility(View.VISIBLE);
+                    binding.scrollViewReport.setVisibility(View.GONE);
+                    binding.layoutEmptyState.setVisibility(View.GONE);
                     break;
                 case SUCCESS:
                     binding.progressReport.setVisibility(View.GONE);
                     if (resource.getData() != null) {
+                        binding.scrollViewReport.setVisibility(View.VISIBLE);
+                        binding.layoutEmptyState.setVisibility(View.GONE);
                         updateUI(resource.getData());
+                    } else {
+                        showEmptyState();
                     }
                     break;
                 case ERROR:
                     binding.progressReport.setVisibility(View.GONE);
-                    Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
+                    showEmptyState();
+                    if (resource.getMessage() != null && !resource.getMessage().contains("No data")) {
+                        Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                     break;
             }
         });
+    }
+
+    private void showEmptyState() {
+        binding.scrollViewReport.setVisibility(View.GONE);
+        binding.layoutEmptyState.setVisibility(View.VISIBLE);
+        binding.tvEmptyTitle.setText("No data available for " + monthYearFormat.format(selectedMonthCalendar.getTime()));
     }
 
     private void updateUI(MonthlyReport report) {

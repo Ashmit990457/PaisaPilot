@@ -11,6 +11,7 @@ import com.example.paisapilot.data.session.SessionManager;
 import com.example.paisapilot.model.*;
 import com.example.paisapilot.utils.Mapper;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -44,42 +45,28 @@ public class ReportRepository {
 
     public interface ReportCallback {
         void onSuccess(@NonNull MonthlyReport report);
-        void onArchivesLoaded(@NonNull List<MonthlyArchiveEntity> archives);
         void onError(@NonNull String message);
     }
 
-    public void loadArchivedReport(@NonNull String monthId, @NonNull ReportCallback callback) {
-        String userId = sessionManager.getUserId();
-        executor.execute(() -> {
-            MonthlyArchiveEntity entity = archiveDao.getArchiveByMonth(userId, monthId);
-            if (entity != null) {
-                MonthlyReport report = new MonthlyReport();
-                report.setMonthName(entity.getMonthId());
-                report.setTotalIncome(entity.getTotalIncome());
-                report.setTotalExpenses(entity.getTotalExpenses());
-                report.setTotalSavings(entity.getTotalSavings());
-                report.setBudgetUtilization(entity.getBudgetUsagePercent());
-                report.setAiSummary(entity.getAiInsightSummary());
-                // For archived reports, we might not have the full transaction list unless we store it.
-                // For now, we return high-level summary as per requirement.
-                callback.onSuccess(report);
-            } else {
-                callback.onError("Archive not found for " + monthId);
-            }
-        });
-    }
-
-    public LiveData<List<MonthlyArchiveEntity>> getAllArchives() {
-        return archiveDao.getArchivesByUser(sessionManager.getUserId());
-    }
-
-    public void generateMonthlyReport(@NonNull ReportCallback callback) {
+    public void loadReportForMonth(@NonNull String monthId, @NonNull ReportCallback callback) {
         String userId = sessionManager.getUserId();
         if (userId == null) {
             callback.onError("User not authenticated");
             return;
         }
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+        String currentMonthId = sdf.format(new java.util.Date());
+
+        if (monthId.equals(currentMonthId)) {
+            generateLiveMonthlyReport(callback);
+        } else {
+            fetchArchivedReport(userId, monthId, callback);
+        }
+    }
+
+    private void generateLiveMonthlyReport(@NonNull ReportCallback callback) {
+        String userId = sessionManager.getUserId();
         executor.execute(() -> {
             try {
                 Calendar calendar = Calendar.getInstance();
@@ -115,6 +102,41 @@ public class ReportRepository {
                 callback.onError(e.getMessage() != null ? e.getMessage() : "Report failed");
             }
         });
+    }
+
+    private void fetchArchivedReport(String userId, String monthId, ReportCallback callback) {
+        executor.execute(() -> {
+            MonthlyArchiveEntity entity = archiveDao.getArchiveByMonth(userId, monthId);
+            if (entity != null) {
+                MonthlyReport report = new MonthlyReport();
+                report.setMonthName(formatMonthIdForDisplay(monthId));
+                report.setTotalIncome(entity.getTotalIncome());
+                report.setTotalExpenses(entity.getTotalExpenses());
+                report.setTotalSavings(entity.getTotalSavings());
+                report.setBudgetUtilization(entity.getBudgetUsagePercent());
+                report.setAiSummary(entity.getAiInsightSummary());
+                // Minimal archived data
+                report.setAllExpenses(new ArrayList<>()); 
+                callback.onSuccess(report);
+            } else {
+                callback.onError("No data available for " + formatMonthIdForDisplay(monthId));
+            }
+        });
+    }
+
+    private String formatMonthIdForDisplay(String monthId) {
+        try {
+            SimpleDateFormat in = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+            SimpleDateFormat out = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+            java.util.Date date = in.parse(monthId);
+            return date != null ? out.format(date) : monthId;
+        } catch (Exception e) {
+            return monthId;
+        }
+    }
+
+    public LiveData<List<MonthlyArchiveEntity>> getAllArchives() {
+        return archiveDao.getArchivesByUser(sessionManager.getUserId());
     }
 
     public MonthlyReport compileReport(String monthName, double income, List<Expense> expenses, List<Budget> budgets, List<SavingsGoal> goals, List<RecurringExpense> recurring) {

@@ -31,34 +31,13 @@ public class ReportViewModel extends AndroidViewModel {
         return repository.getAllArchives();
     }
 
-    public void loadMonthlyReport() {
+    public void loadReport(String monthId) {
         reportState.setValue(Resource.loading());
-        repository.generateMonthlyReport(new ReportRepository.ReportCallback() {
+        repository.loadReportForMonth(monthId, new ReportRepository.ReportCallback() {
             @Override
             public void onSuccess(@NonNull MonthlyReport report) {
                 reportState.postValue(Resource.success(report));
             }
-
-            @Override
-            public void onArchivesLoaded(@NonNull List<MonthlyArchiveEntity> archives) {}
-
-            @Override
-            public void onError(@NonNull String message) {
-                reportState.postValue(Resource.error(message));
-            }
-        });
-    }
-
-    public void loadArchivedReport(String monthId) {
-        reportState.setValue(Resource.loading());
-        repository.loadArchivedReport(monthId, new ReportRepository.ReportCallback() {
-            @Override
-            public void onSuccess(@NonNull MonthlyReport report) {
-                reportState.postValue(Resource.success(report));
-            }
-
-            @Override
-            public void onArchivesLoaded(@NonNull List<MonthlyArchiveEntity> archives) {}
 
             @Override
             public void onError(@NonNull String message) {
