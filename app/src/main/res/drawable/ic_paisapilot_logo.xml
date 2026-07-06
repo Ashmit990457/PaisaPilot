@@ -1,0 +1,45 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Background Circle for a premium look -->
+    <path
+        android:pathData="M100,100m-90,0a90,90 0,1 1,180 0a90,90 0,1 1,-180 0"
+        android:fillColor="@color/primary_purple"/>
+
+    <!-- Integrated Bar Chart Elements inside P -->
+    <path
+        android:pathData="M85,130 L85,115"
+        android:strokeWidth="8"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M100,130 L100,105"
+        android:strokeWidth="8"
+        android:strokeColor="@color/accent_green"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M115,130 L115,95"
+        android:strokeWidth="8"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"/>
+
+    <!-- The Letter P -->
+    <path
+        android:pathData="M70,145 L70,60 C70,45 130,45 130,75 C130,90 100,100 70,100"
+        android:strokeWidth="12"
+        android:strokeColor="@color/white"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+
+    <!-- Upward Growth Arrow -->
+    <path
+        android:pathData="M125,120 L150,95 M150,95 L135,95 M150,95 L150,110"
+        android:strokeWidth="8"
+        android:strokeColor="@color/accent_green"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+
+</vector>

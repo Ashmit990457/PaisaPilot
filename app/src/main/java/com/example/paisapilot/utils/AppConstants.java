@@ -1,5 +1,9 @@
 package com.example.paisapilot.utils;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * AppConstants holds all application-level constants.
  *
@@ -57,9 +61,49 @@ public class AppConstants {
     public static final int MAX_CATEGORY_NAME_LENGTH = 50;
     public static final int MIN_PASSWORD_LENGTH = 6;
 
+    // ===== Expense Categories =====
+    public static final List<String> EXPENSE_CATEGORIES = Collections.unmodifiableList(Arrays.asList(
+            "Food",
+            "Transport",
+            "Shopping",
+            "Bills",
+            "Health",
+            "Entertainment",
+            "Education",
+            "Other"
+    ));
+
+    // ===== Payment Methods =====
+    public static final List<String> PAYMENT_METHODS = Collections.unmodifiableList(Arrays.asList(
+            "Cash",
+            "UPI",
+            "Credit Card",
+            "Debit Card",
+            "Net Banking",
+            "Wallet"
+    ));
+
+    // ===== Goal Types =====
+    public static final List<String> GOAL_TYPES = Collections.unmodifiableList(Arrays.asList(
+            "Emergency Fund",
+            "Vacation",
+            "Car",
+            "House",
+            "Education",
+            "Retirement",
+            "Other"
+    ));
+
+    // ===== Recurring Frequencies =====
+    public static final List<String> RECURRING_FREQUENCIES = Collections.unmodifiableList(Arrays.asList(
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "Yearly"
+    ));
+
     // Prevent instantiation
     private AppConstants() {
         throw new AssertionError("No instances of AppConstants");
     }
 }
-

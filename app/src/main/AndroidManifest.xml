@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,15 +19,86 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PaisaPilot">
         <activity
-            android:name=".ui.activities.MainActivity"
+            android:name=".ui.activities.SplashActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:theme="@style/Theme.PaisaPilot.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.activities.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.activities.LoginActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.RegisterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.OnboardingActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.ProfileSetupActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.AddExpenseActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.BudgetActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.AddBudgetActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.AllExpensesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.SavingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.AddGoalActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.RecurringExpensesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.AddRecurringExpenseActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.ReportsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.activities.ReceiptScannerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PaisaPilot" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

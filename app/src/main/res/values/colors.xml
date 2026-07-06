@@ -2,4 +2,26 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Fintech Palette -->
+    <color name="primary_purple">#6750A4</color>
+    <color name="primary_purple_variant">#4F378B</color>
+    <color name="accent_green">#22C55E</color>
+    <color name="accent_green_variant">#15803D</color>
+    <color name="splash_bg">#F8F9FF</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_muted">#94A3B8</color>
+
+    <!-- UI Helpers -->
+    <color name="border_light">#E2E8F0</color>
+    <color name="success_bg">#DCFCE7</color>
+    <color name="error_bg">#FEE2E2</color>
+    <color name="warning_bg">#FEF3C7</color>
+    <color name="info_bg">#E0F2FE</color>
+
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#F3E8FF</color> <!-- Very subtle purple -->
+    <color name="gradient_end">#F8F9FF</color>
 </resources>
