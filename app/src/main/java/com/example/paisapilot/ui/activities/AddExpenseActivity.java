@@ -32,6 +32,8 @@ public class AddExpenseActivity extends AppCompatActivity {
     private Timestamp selectedDate;
     private boolean isSaving = false;
     private String expenseIdToEdit = null;
+    private String editUserId = null;
+    private Timestamp editCreatedAt = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,12 +86,18 @@ public class AddExpenseActivity extends AppCompatActivity {
             }
             
             binding.etExpenseNote.setText(intent.getStringExtra("edit_note"));
+            editUserId = intent.getStringExtra("edit_user_id");
             
             long dateLong = intent.getLongExtra("edit_date", -1);
             if (dateLong != -1) {
                 Date date = new Date(dateLong);
                 selectedDate = new Timestamp(date);
                 updateSelectedDateText(date);
+            }
+
+            long createdLong = intent.getLongExtra("edit_created_at", -1);
+            if (createdLong != -1) {
+                editCreatedAt = new Timestamp(new Date(createdLong));
             }
         } else {
             binding.toolbarAddExpense.setTitle("Add Expense");
@@ -212,6 +220,6 @@ public class AddExpenseActivity extends AppCompatActivity {
         binding.btnSaveExpense.setEnabled(false);
         binding.progressSaveExpense.setVisibility(View.VISIBLE);
 
-        viewModel.saveExpense(expenseIdToEdit, title, category, amount, selectedDate, note, paymentMethod);
+        viewModel.saveExpense(expenseIdToEdit, title, category, amount, selectedDate, note, paymentMethod, editUserId, editCreatedAt);
     }
 }

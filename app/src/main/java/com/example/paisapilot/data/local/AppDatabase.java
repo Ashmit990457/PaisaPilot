@@ -15,8 +15,9 @@ import com.example.paisapilot.data.local.entity.*;
         BudgetEntity.class,
         GoalEntity.class,
         RecurringBillEntity.class,
-        UserProfileEntity.class
-}, version = 1, exportSchema = false)
+        UserProfileEntity.class,
+        MonthlyArchiveEntity.class
+}, version = 2, exportSchema = false)
 @TypeConverters({DataConverters.class})
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -27,6 +28,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract GoalDao goalDao();
     public abstract RecurringBillDao recurringBillDao();
     public abstract UserProfileDao userProfileDao();
+    public abstract ArchiveDao archiveDao();
 
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
@@ -34,6 +36,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (instance == null) {
                     instance = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "paisapilot_db")
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

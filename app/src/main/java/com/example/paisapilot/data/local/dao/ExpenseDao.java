@@ -13,6 +13,9 @@ import java.util.List;
 
 @Dao
 public interface ExpenseDao {
+    @Query("SELECT * FROM expenses WHERE userId = :userId AND date >= :monthStart AND syncStatus != 'PENDING_DELETE' ORDER BY date DESC")
+    LiveData<List<ExpenseEntity>> getExpensesByUserCurrentMonth(String userId, long monthStart);
+
     @Query("SELECT * FROM expenses WHERE userId = :userId AND syncStatus != 'PENDING_DELETE' ORDER BY date DESC")
     LiveData<List<ExpenseEntity>> getExpensesByUser(String userId);
 

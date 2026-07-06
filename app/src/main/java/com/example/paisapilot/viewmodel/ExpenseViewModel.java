@@ -52,10 +52,10 @@ public class ExpenseViewModel extends AndroidViewModel {
     }
 
     public void addExpense(@NonNull String title, @NonNull String category, @NonNull String amountText, @NonNull Timestamp date, @NonNull String note, @NonNull String paymentMethod) {
-        saveExpense(null, title, category, amountText, date, note, paymentMethod);
+        saveExpense(null, title, category, amountText, date, note, paymentMethod, null, null);
     }
 
-    public void saveExpense(@Nullable String id, @NonNull String title, @NonNull String category, @NonNull String amountText, @NonNull Timestamp date, @NonNull String note, @NonNull String paymentMethod) {
+    public void saveExpense(@Nullable String id, @NonNull String title, @NonNull String category, @NonNull String amountText, @NonNull Timestamp date, @NonNull String note, @NonNull String paymentMethod, @Nullable String userId, @Nullable Timestamp createdAt) {
         double amount;
         try {
             amount = Double.parseDouble(amountText.trim());
@@ -78,6 +78,8 @@ public class ExpenseViewModel extends AndroidViewModel {
         expense.setDate(date);
         expense.setNote(note.trim());
         expense.setPaymentMethod(paymentMethod.trim());
+        expense.setUserId(userId);
+        expense.setCreatedAt(createdAt);
 
         expenseActionState.setValue(Resource.loading());
         ExpenseRepository.ExpenseCallback<Boolean> callback = new ExpenseRepository.ExpenseCallback<Boolean>() {

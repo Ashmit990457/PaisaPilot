@@ -27,6 +27,7 @@ public class InsightRepository {
     private final GoalDao goalDao;
     private final RecurringBillDao recurringBillDao;
     private final UserProfileDao profileDao;
+    private final ArchiveDao archiveDao;
     private final SessionManager sessionManager;
 
     public InsightRepository(Context context) {
@@ -36,6 +37,7 @@ public class InsightRepository {
         this.goalDao = db.goalDao();
         this.recurringBillDao = db.recurringBillDao();
         this.profileDao = db.userProfileDao();
+        this.archiveDao = db.archiveDao();
         this.sessionManager = SessionManager.getInstance(context);
     }
 
@@ -53,27 +55,61 @@ public class InsightRepository {
         LiveData<List<BudgetEntity>> budgetsLive = budgetDao.getBudgetsByUser(userId);
         LiveData<List<GoalEntity>> goalsLive = goalDao.getGoalsByUser(userId);
         LiveData<List<RecurringBillEntity>> recurringLive = recurringBillDao.getRecurringBillsByUser(userId);
+        LiveData<List<MonthlyArchiveEntity>> archivesLive = archiveDao.getArchivesByUser(userId);
 
-        result.addSource(profileLive, p -> updateInsights(result, p, expensesLive.getValue(), budgetsLive.getValue(), goalsLive.getValue(), recurringLive.getValue()));
-        result.addSource(expensesLive, e -> updateInsights(result, profileLive.getValue(), e, budgetsLive.getValue(), goalsLive.getValue(), recurringLive.getValue()));
-        result.addSource(budgetsLive, b -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), b, goalsLive.getValue(), recurringLive.getValue()));
-        result.addSource(goalsLive, g -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), budgetsLive.getValue(), g, recurringLive.getValue()));
-        result.addSource(recurringLive, r -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), budgetsLive.getValue(), goalsLive.getValue(), r));
+        result.addSource(profileLive, p -> updateInsights(result, p, expensesLive.getValue(), budgetsLive.getValue(), goalsLive.getValue(), recurringLive.getValue(), archivesLive.getValue()));
+        result.addSource(expensesLive, e -> updateInsights(result, profileLive.getValue(), e, budgetsLive.getValue(), goalsLive.getValue(), recurringLive.getValue(), archivesLive.getValue()));
+        result.addSource(budgetsLive, b -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), b, goalsLive.getValue(), recurringLive.getValue(), archivesLive.getValue()));
+        result.addSource(goalsLive, g -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), budgetsLive.getValue(), g, recurringLive.getValue(), archivesLive.getValue()));
+        result.addSource(recurringLive, r -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), budgetsLive.getValue(), goalsLive.getValue(), r, archivesLive.getValue()));
+        result.addSource(archivesLive, a -> updateInsights(result, profileLive.getValue(), expensesLive.getValue(), budgetsLive.getValue(), goalsLive.getValue(), recurringLive.getValue(), a));
 
         return result;
     }
 
-    private void updateInsights(MediatorLiveData<List<Insight>> result, UserProfileEntity profile, List<ExpenseEntity> expenses, List<BudgetEntity> budgets, List<GoalEntity> goals, List<RecurringBillEntity> recurring) {
+    private void updateInsights(MediatorLiveData<List<Insight>> result, UserProfileEntity profile, List<ExpenseEntity> expenses, List<BudgetEntity> budgets, List<GoalEntity> goals, List<RecurringBillEntity> recurring, List<MonthlyArchiveEntity> archives) {
         if (expenses == null || budgets == null || goals == null || recurring == null) return;
 
-        UserProfile userProfile = profile != null ? Mapper.toModel(profile) : null;
-        List<Expense> expenseModels = Mapper.toModelList(expenses);
-        List<Budget> budgetModels = Mapper.toBudgetModelList(budgets);
+        UserProfile profileModel = profile != null ? Mapper.toModel(profile) : null;
+        List<Expense> expModels = Mapper.toModelList(expenses);
+        List<Budget> budModels = Mapper.toBudgetModelList(budgets);
         List<SavingsGoal> goalModels = Mapper.toGoalModelList(goals);
-        List<RecurringExpense> recurringModels = Mapper.toRecurringModelList(recurring);
+        List<RecurringExpense> recModels = Mapper.toRecurringModelList(recurring);
 
-        List<Insight> insights = calculateInsights(userProfile, expenseModels, budgetModels, goalModels, recurringModels);
-        result.setValue(insights);
+        List<Insight> insights = calculateInsights(profileModel, expModels, budModels, goalModels, recModels);
+        
+        // Add monthly comparison insight if archive exists
+        if (archives != null && !archives.isEmpty()) {
+            MonthlyArchiveEntity lastMonth = archives.get(0);
+            double currentExpTotal = 0;
+            // Filter only current month expenses for comparison
+            Calendar cal = Calendar.getInstance();
+            int month = cal.get(Calendar.MONTH);
+            int year = cal.get(Calendar.YEAR);
+            
+            for (Expense e : expModels) {
+                if (e.getDate() == null) continue;
+                Calendar ec = Calendar.getInstance();
+                ec.setTime(e.getDate().toDate());
+                if (ec.get(Calendar.MONTH) == month && ec.get(Calendar.YEAR) == year) {
+                    currentExpTotal += e.getAmount();
+                }
+            }
+            
+            double diff = lastMonth.getTotalExpenses() - currentExpTotal;
+            if (diff > 0) {
+                insights.add(0, new Insight("Monthly Savings", "You spent ₹" + String.format(Locale.getDefault(), "%.0f", diff) + " less than last month so far!", Insight.Type.SUCCESS, 15));
+            } else if (diff < -1000) {
+                insights.add(0, new Insight("Spending Spike", "You spent ₹" + String.format(Locale.getDefault(), "%.0f", Math.abs(diff)) + " more than last month already.", Insight.Type.WARNING, 15));
+            }
+        }
+
+        Collections.sort(insights, (a, b) -> b.getPriority() - a.getPriority());
+        if (insights.size() > 5) {
+            result.setValue(insights.subList(0, 5));
+        } else {
+            result.setValue(insights);
+        }
     }
 
     private List<Insight> calculateInsights(UserProfile profile, List<Expense> expenses, List<Budget> budgets, List<SavingsGoal> goals, List<RecurringExpense> recurring) {
@@ -117,7 +153,6 @@ public class InsightRepository {
             }
         }
 
-        // 1. Budget Insights
         for (Budget budget : budgets) {
             double spent = budget.getSpentAmount();
             double limit = budget.getMonthlyLimit();
@@ -138,7 +173,6 @@ public class InsightRepository {
             }
         }
 
-        // 1.1 Savings Goal Insights
         for (SavingsGoal goal : goals) {
             if (goal.isCompleted()) {
                 insights.add(new Insight(
@@ -154,18 +188,9 @@ public class InsightRepository {
                         Insight.Type.SUCCESS,
                         9
                 ));
-            } else {
-                double remaining = goal.getRemainingAmount();
-                insights.add(new Insight(
-                        "Savings Tip",
-                        String.format(Locale.getDefault(), "Try saving ₹%.2f more to reach your %s target.", remaining / 4, goal.getTitle()),
-                        Insight.Type.TIP,
-                        2
-                ));
             }
         }
 
-        // 1.2 Recurring Bill Insights
         int billsThisWeek = 0;
         Calendar weekEnd = Calendar.getInstance();
         weekEnd.add(Calendar.DAY_OF_YEAR, 7);
@@ -197,86 +222,25 @@ public class InsightRepository {
             ));
         }
 
-        // 1.3 Financial Forecast Insights
         if (profile != null) {
             double incomeVal = profile.getMonthlyIncome();
             int todayDay = cal.get(Calendar.DAY_OF_MONTH);
             int totalDays = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-            
-            double avgDaily = currentMonthSpending / Math.max(todayDay, 1);
-            double projectedExpense = avgDaily * totalDays;
-            double predictedSavings = incomeVal - projectedExpense;
+            double projectedExpense = (currentMonthSpending / Math.max(todayDay, 1)) * totalDays;
 
             if (projectedExpense > incomeVal && incomeVal > 0) {
                 insights.add(new Insight(
                         "Overspending Alert",
-                        "You are projected to overspend your monthly income by month end.",
+                        "You are projected to overspend your monthly income.",
                         Insight.Type.WARNING,
                         15
                 ));
-            } else if (incomeVal > 0) {
-                double savingsRatio = predictedSavings / incomeVal;
-                if (savingsRatio > 0.2) {
-                    insights.add(new Insight(
-                            "Savings Track",
-                            String.format(Locale.getDefault(), "Excellent! You are on track to save over ₹%.0f this month.", predictedSavings),
-                            Insight.Type.SUCCESS,
-                            7
-                    ));
-                }
             }
         }
 
-        // 2. Savings Insight
-        double totalBudgetLimit = 0;
-        for (Budget b : budgets) totalBudgetLimit += b.getMonthlyLimit();
-        if (totalBudgetLimit > 0 && currentMonthSpending < 0.7 * totalBudgetLimit) {
-            insights.add(new Insight(
-                    "Great Savings!",
-                    "Great job! You are saving well this month.",
-                    Insight.Type.SUCCESS,
-                    6
-            ));
-        }
-
-        // 3. Highest Category
-        String highestCat = null;
-        double maxSpending = -1;
-        for (Map.Entry<String, Double> entry : categorySpending.entrySet()) {
-            if (entry.getValue() > maxSpending) {
-                maxSpending = entry.getValue();
-                highestCat = entry.getKey();
-            }
-        }
-        if (highestCat != null) {
-            insights.add(new Insight(
-                    "Highest Category",
-                    String.format("You spend most on %s.", highestCat),
-                    Insight.Type.INFO,
-                    5
-            ));
-            
-            if (currentMonthSpending > 0 && categorySpending.get(highestCat) > 0.4 * currentMonthSpending) {
-                insights.add(new Insight(
-                        "Optimization Tip",
-                        String.format("Consider reducing %s expenses. It's over 40%% of your monthly total.", highestCat),
-                        Insight.Type.TIP,
-                        4
-                ));
-            }
-        }
-
-        // 5. Weekly Trend
         if (lastWeekSpending > 0) {
             double percentChange = ((currentWeekSpending - lastWeekSpending) / lastWeekSpending) * 100;
-            if (percentChange > 0) {
-                insights.add(new Insight(
-                        "Spending Increased",
-                        String.format("You spent %.0f%% more this week compared to last.", percentChange),
-                        Insight.Type.INFO,
-                        3
-                ));
-            } else if (percentChange < 0) {
+            if (percentChange < 0) {
                 insights.add(new Insight(
                         "Spending Decreased",
                         String.format("Great! Spending reduced by %.0f%% compared to last week.", Math.abs(percentChange)),
@@ -286,10 +250,6 @@ public class InsightRepository {
             }
         }
 
-        Collections.sort(insights, (a, b) -> b.getPriority() - a.getPriority());
-        if (insights.size() > 5) {
-            return insights.subList(0, 5);
-        }
         return insights;
     }
 }

@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.paisapilot.data.local.LifecycleManager;
 import com.example.paisapilot.databinding.ActivitySplashBinding;
 import com.example.paisapilot.model.NavigationTarget;
 import com.example.paisapilot.model.Resource;
@@ -83,6 +84,8 @@ public class SplashActivity extends AppCompatActivity {
         });
 
         viewModel.start();
+
+        new LifecycleManager(this).checkAndRunRollover();
 
         scheduleBackgroundTasks();
     }

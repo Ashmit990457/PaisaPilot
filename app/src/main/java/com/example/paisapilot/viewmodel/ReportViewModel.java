@@ -1,15 +1,17 @@
 package com.example.paisapilot.viewmodel;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.paisapilot.data.local.entity.MonthlyArchiveEntity;
 import com.example.paisapilot.model.MonthlyReport;
 import com.example.paisapilot.model.Resource;
 import com.example.paisapilot.repository.ReportRepository;
+
+import java.util.List;
 
 public class ReportViewModel extends AndroidViewModel {
 
@@ -25,6 +27,10 @@ public class ReportViewModel extends AndroidViewModel {
         return reportState;
     }
 
+    public LiveData<List<MonthlyArchiveEntity>> getArchives() {
+        return repository.getAllArchives();
+    }
+
     public void loadMonthlyReport() {
         reportState.setValue(Resource.loading());
         repository.generateMonthlyReport(new ReportRepository.ReportCallback() {
@@ -32,6 +38,27 @@ public class ReportViewModel extends AndroidViewModel {
             public void onSuccess(@NonNull MonthlyReport report) {
                 reportState.postValue(Resource.success(report));
             }
+
+            @Override
+            public void onArchivesLoaded(@NonNull List<MonthlyArchiveEntity> archives) {}
+
+            @Override
+            public void onError(@NonNull String message) {
+                reportState.postValue(Resource.error(message));
+            }
+        });
+    }
+
+    public void loadArchivedReport(String monthId) {
+        reportState.setValue(Resource.loading());
+        repository.loadArchivedReport(monthId, new ReportRepository.ReportCallback() {
+            @Override
+            public void onSuccess(@NonNull MonthlyReport report) {
+                reportState.postValue(Resource.success(report));
+            }
+
+            @Override
+            public void onArchivesLoaded(@NonNull List<MonthlyArchiveEntity> archives) {}
 
             @Override
             public void onError(@NonNull String message) {

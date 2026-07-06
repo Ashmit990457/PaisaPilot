@@ -8,6 +8,7 @@ public class SessionManager {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_FIRST_LAUNCH = "is_first_launch";
+    private static final String KEY_LAST_PROCESSED_MONTH = "last_processed_month";
 
     private final SharedPreferences pref;
     private final SharedPreferences.Editor editor;
@@ -47,6 +48,15 @@ public class SessionManager {
 
     public boolean isFirstLaunch() {
         return pref.getBoolean(KEY_FIRST_LAUNCH, true);
+    }
+
+    public String getLastProcessedMonth() {
+        return pref.getString(KEY_LAST_PROCESSED_MONTH, "");
+    }
+
+    public void setLastProcessedMonth(String monthId) {
+        editor.putString(KEY_LAST_PROCESSED_MONTH, monthId);
+        editor.apply();
     }
 
     public void logout() {

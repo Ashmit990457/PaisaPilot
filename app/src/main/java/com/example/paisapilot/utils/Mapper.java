@@ -36,11 +36,11 @@ public class Mapper {
                 model.getTitle(),
                 model.getCategory(),
                 model.getAmount(),
-                model.getDate().toDate(),
+                model.getDate() != null ? model.getDate().toDate() : new java.util.Date(),
                 model.getNote(),
                 model.getPaymentMethod(),
                 model.getUserId(),
-                model.getCreatedAt().toDate(),
+                model.getCreatedAt() != null ? model.getCreatedAt().toDate() : new java.util.Date(),
                 status
         );
     }
@@ -70,7 +70,7 @@ public class Mapper {
                 model.getMonthlyLimit(),
                 model.getSpentAmount(),
                 model.getRemainingAmount(),
-                model.getCreatedAt().toDate(),
+                model.getCreatedAt() != null ? model.getCreatedAt().toDate() : new java.util.Date(),
                 model.getUserId(),
                 status
         );
@@ -103,8 +103,8 @@ public class Mapper {
                 model.getTargetAmount(),
                 model.getSavedAmount(),
                 model.getTargetAmount() - model.getSavedAmount(),
-                model.getTargetDate().toDate(),
-                model.getCreatedAt().toDate(),
+                model.getTargetDate() != null ? model.getTargetDate().toDate() : new java.util.Date(),
+                model.getCreatedAt() != null ? model.getCreatedAt().toDate() : new java.util.Date(),
                 model.isCompleted(),
                 status
         );
@@ -143,11 +143,11 @@ public class Mapper {
                 model.getCategory(),
                 model.getAmount(),
                 model.getFrequency(),
-                model.getNextDueDate().toDate(),
+                model.getNextDueDate() != null ? model.getNextDueDate().toDate() : new java.util.Date(),
                 model.getLastProcessedDate() != null ? model.getLastProcessedDate().toDate() : null,
                 model.isReminderEnabled(),
                 model.isAutoAddExpense(),
-                model.getCreatedAt().toDate(),
+                model.getCreatedAt() != null ? model.getCreatedAt().toDate() : new java.util.Date(),
                 status
         );
     }

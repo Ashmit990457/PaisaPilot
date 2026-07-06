@@ -2,6 +2,7 @@ package com.example.paisapilot.repository;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 
 import com.example.paisapilot.data.local.AppDatabase;
 import com.example.paisapilot.data.local.dao.*;
@@ -9,7 +10,6 @@ import com.example.paisapilot.data.local.entity.*;
 import com.example.paisapilot.data.session.SessionManager;
 import com.example.paisapilot.model.*;
 import com.example.paisapilot.utils.Mapper;
-import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,6 +27,7 @@ public class ReportRepository {
     private final GoalDao goalDao;
     private final RecurringBillDao recurringBillDao;
     private final UserProfileDao profileDao;
+    private final ArchiveDao archiveDao;
     private final SessionManager sessionManager;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -37,12 +38,39 @@ public class ReportRepository {
         this.goalDao = db.goalDao();
         this.recurringBillDao = db.recurringBillDao();
         this.profileDao = db.userProfileDao();
+        this.archiveDao = db.archiveDao();
         this.sessionManager = SessionManager.getInstance(context);
     }
 
     public interface ReportCallback {
         void onSuccess(@NonNull MonthlyReport report);
+        void onArchivesLoaded(@NonNull List<MonthlyArchiveEntity> archives);
         void onError(@NonNull String message);
+    }
+
+    public void loadArchivedReport(@NonNull String monthId, @NonNull ReportCallback callback) {
+        String userId = sessionManager.getUserId();
+        executor.execute(() -> {
+            MonthlyArchiveEntity entity = archiveDao.getArchiveByMonth(userId, monthId);
+            if (entity != null) {
+                MonthlyReport report = new MonthlyReport();
+                report.setMonthName(entity.getMonthId());
+                report.setTotalIncome(entity.getTotalIncome());
+                report.setTotalExpenses(entity.getTotalExpenses());
+                report.setTotalSavings(entity.getTotalSavings());
+                report.setBudgetUtilization(entity.getBudgetUsagePercent());
+                report.setAiSummary(entity.getAiInsightSummary());
+                // For archived reports, we might not have the full transaction list unless we store it.
+                // For now, we return high-level summary as per requirement.
+                callback.onSuccess(report);
+            } else {
+                callback.onError("Archive not found for " + monthId);
+            }
+        });
+    }
+
+    public LiveData<List<MonthlyArchiveEntity>> getAllArchives() {
+        return archiveDao.getArchivesByUser(sessionManager.getUserId());
     }
 
     public void generateMonthlyReport(@NonNull ReportCallback callback) {
@@ -88,8 +116,7 @@ public class ReportRepository {
             }
         });
     }
-    
-    // Helper method to keep current logic
+
     public MonthlyReport compileReport(String monthName, double income, List<Expense> expenses, List<Budget> budgets, List<SavingsGoal> goals, List<RecurringExpense> recurring) {
         MonthlyReport report = new MonthlyReport();
         report.setMonthName(monthName);

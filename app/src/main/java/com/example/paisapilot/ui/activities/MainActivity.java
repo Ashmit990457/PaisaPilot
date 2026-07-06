@@ -195,8 +195,12 @@ public class MainActivity extends BaseActivity {
         intent.putExtra("edit_category", expense.getCategory());
         intent.putExtra("edit_payment", expense.getPaymentMethod());
         intent.putExtra("edit_note", expense.getNote());
+        intent.putExtra("edit_user_id", expense.getUserId());
         if (expense.getDate() != null) {
             intent.putExtra("edit_date", expense.getDate().toDate().getTime());
+        }
+        if (expense.getCreatedAt() != null) {
+            intent.putExtra("edit_created_at", expense.getCreatedAt().toDate().getTime());
         }
         startActivityForResult(intent, ADD_EXPENSE_REQUEST);
     }
