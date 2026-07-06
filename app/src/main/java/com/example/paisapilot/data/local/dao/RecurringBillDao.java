@@ -13,10 +13,10 @@ import java.util.List;
 
 @Dao
 public interface RecurringBillDao {
-    @Query("SELECT * FROM recurring_bills WHERE userId = :userId")
+    @Query("SELECT * FROM recurring_bills WHERE userId = :userId AND syncStatus != 'PENDING_DELETE'")
     LiveData<List<RecurringBillEntity>> getRecurringBillsByUser(String userId);
 
-    @Query("SELECT * FROM recurring_bills WHERE userId = :userId")
+    @Query("SELECT * FROM recurring_bills WHERE userId = :userId AND syncStatus != 'PENDING_DELETE'")
     List<RecurringBillEntity> getRecurringBillsByUserSync(String userId);
 
     @Query("SELECT * FROM recurring_bills WHERE nextDueDate <= :now")

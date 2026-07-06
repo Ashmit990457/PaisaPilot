@@ -13,13 +13,13 @@ import java.util.List;
 
 @Dao
 public interface ExpenseDao {
-    @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC")
+    @Query("SELECT * FROM expenses WHERE userId = :userId AND syncStatus != 'PENDING_DELETE' ORDER BY date DESC")
     LiveData<List<ExpenseEntity>> getExpensesByUser(String userId);
 
-    @Query("SELECT * FROM expenses WHERE userId = :userId AND date >= :startDate ORDER BY date DESC")
+    @Query("SELECT * FROM expenses WHERE userId = :userId AND date >= :startDate AND syncStatus != 'PENDING_DELETE' ORDER BY date DESC")
     LiveData<List<ExpenseEntity>> getExpensesByUserAfter(String userId, long startDate);
 
-    @Query("SELECT * FROM expenses WHERE userId = :userId AND date >= :startDate ORDER BY date DESC")
+    @Query("SELECT * FROM expenses WHERE userId = :userId AND date >= :startDate AND syncStatus != 'PENDING_DELETE' ORDER BY date DESC")
     List<ExpenseEntity> getExpensesByUserAfterSync(String userId, long startDate);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

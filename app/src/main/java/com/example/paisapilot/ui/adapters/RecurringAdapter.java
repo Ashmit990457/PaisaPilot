@@ -23,6 +23,8 @@ public class RecurringAdapter extends RecyclerView.Adapter<RecurringAdapter.Recu
 
     public interface OnRecurringInteractionListener {
         void onDelete(RecurringExpense recurring);
+        void onEdit(RecurringExpense recurring);
+        void onMarkPaid(RecurringExpense recurring);
     }
 
     public void setOnRecurringInteractionListener(OnRecurringInteractionListener listener) {
@@ -33,6 +35,10 @@ public class RecurringAdapter extends RecyclerView.Adapter<RecurringAdapter.Recu
         list.clear();
         if (newList != null) list.addAll(newList);
         notifyDataSetChanged();
+    }
+
+    public List<RecurringExpense> getList() {
+        return list;
     }
 
     @NonNull
@@ -74,6 +80,15 @@ public class RecurringAdapter extends RecyclerView.Adapter<RecurringAdapter.Recu
 
             binding.btnDeleteRecurring.setOnClickListener(v -> {
                 if (listener != null) listener.onDelete(item);
+            });
+
+            binding.btnMarkPaid.setOnClickListener(v -> {
+                if (listener != null) listener.onMarkPaid(item);
+            });
+            
+            itemView.setOnLongClickListener(v -> {
+                if (listener != null) listener.onEdit(item);
+                return true;
             });
         }
     }

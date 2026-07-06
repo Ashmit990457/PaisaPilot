@@ -3,6 +3,7 @@ package com.example.paisapilot.viewmodel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -53,6 +54,10 @@ public class RecurringViewModel extends AndroidViewModel {
     }
 
     public void createRecurring(String title, String category, String amountStr, RecurringExpense.Frequency frequency, Timestamp nextDueDate, boolean reminder, boolean autoAdd) {
+        saveRecurring(null, title, category, amountStr, frequency, nextDueDate, reminder, autoAdd);
+    }
+
+    public void saveRecurring(@Nullable String id, String title, String category, String amountStr, RecurringExpense.Frequency frequency, Timestamp nextDueDate, boolean reminder, boolean autoAdd) {
         ValidationResult validation = validateRecurringInput(title, amountStr, frequency, nextDueDate);
         if (!validation.isSuccess()) {
             recurringActionState.setValue(Resource.error(validation.getErrorMessage()));
@@ -60,10 +65,10 @@ public class RecurringViewModel extends AndroidViewModel {
         }
 
         double amount = Double.parseDouble(amountStr);
-        RecurringExpense recurring = new RecurringExpense(null, null, title, category, amount, frequency, nextDueDate, reminder, autoAdd);
+        RecurringExpense recurring = new RecurringExpense(id, null, title, category, amount, frequency, nextDueDate, reminder, autoAdd);
 
         recurringActionState.setValue(Resource.loading());
-        repository.createRecurring(recurring, new RecurringRepository.RecurringCallback<Boolean>() {
+        RecurringRepository.RecurringCallback<Boolean> callback = new RecurringRepository.RecurringCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean data) {
                 recurringActionState.postValue(Resource.success(true));
@@ -73,16 +78,38 @@ public class RecurringViewModel extends AndroidViewModel {
             public void onError(@NonNull String message) {
                 recurringActionState.postValue(Resource.error(message));
             }
-        });
+        };
+
+        if (id == null) {
+            repository.createRecurring(recurring, callback);
+        } else {
+            repository.updateRecurring(recurring, callback);
+        }
     }
 
     public void loadRecurringExpenses() {
-        // Automatically observed
     }
 
     public void deleteRecurring(String id) {
-        recurringActionState.setValue(Resource.loading());
         repository.deleteRecurring(id, new RecurringRepository.RecurringCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean data) {
+            }
+
+            @Override
+            public void onError(@NonNull String message) {
+                recurringActionState.postValue(Resource.error(message));
+            }
+        });
+    }
+
+    public void undoDelete(String id) {
+        repository.undoDelete(id);
+    }
+
+    public void markPaid(RecurringExpense item) {
+        recurringActionState.setValue(Resource.loading());
+        repository.markPaid(item, new RecurringRepository.RecurringCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean data) {
                 recurringActionState.postValue(Resource.success(true));

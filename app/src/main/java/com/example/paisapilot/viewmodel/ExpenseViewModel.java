@@ -3,6 +3,7 @@ package com.example.paisapilot.viewmodel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -20,14 +21,12 @@ public class ExpenseViewModel extends AndroidViewModel {
 
     private final ExpenseRepository repository;
     private final MediatorLiveData<Resource<List<Expense>>> expensesState = new MediatorLiveData<>();
-    private final MutableLiveData<Resource<Boolean>> addExpenseState = new MutableLiveData<>();
-    private final MutableLiveData<Resource<Boolean>> deleteExpenseState = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Boolean>> expenseActionState = new MutableLiveData<>();
 
     public ExpenseViewModel(@NonNull Application application) {
         super(application);
         this.repository = new ExpenseRepository(application);
         
-        // Connect LiveData from Repository to ViewModel state
         expensesState.addSource(repository.getAllExpenses(), expenses -> {
             expensesState.setValue(Resource.success(expenses));
         });
@@ -38,11 +37,11 @@ public class ExpenseViewModel extends AndroidViewModel {
     }
 
     public LiveData<Resource<Boolean>> getAddExpenseState() {
-        return addExpenseState;
+        return expenseActionState;
     }
 
     public LiveData<Resource<Boolean>> getDeleteExpenseState() {
-        return deleteExpenseState;
+        return expenseActionState;
     }
 
     public ValidationResult validateExpenseInput(@NonNull String title, @NonNull String category, double amount) {
@@ -53,21 +52,26 @@ public class ExpenseViewModel extends AndroidViewModel {
     }
 
     public void addExpense(@NonNull String title, @NonNull String category, @NonNull String amountText, @NonNull Timestamp date, @NonNull String note, @NonNull String paymentMethod) {
+        saveExpense(null, title, category, amountText, date, note, paymentMethod);
+    }
+
+    public void saveExpense(@Nullable String id, @NonNull String title, @NonNull String category, @NonNull String amountText, @NonNull Timestamp date, @NonNull String note, @NonNull String paymentMethod) {
         double amount;
         try {
             amount = Double.parseDouble(amountText.trim());
         } catch (NumberFormatException e) {
-            addExpenseState.setValue(Resource.error("Enter a valid amount"));
+            expenseActionState.setValue(Resource.error("Enter a valid amount"));
             return;
         }
 
         ValidationResult validation = validateExpenseInput(title, category, amount);
         if (!validation.isSuccess()) {
-            addExpenseState.setValue(Resource.error(validation.getErrorMessage()));
+            expenseActionState.setValue(Resource.error(validation.getErrorMessage()));
             return;
         }
 
         Expense expense = new Expense();
+        expense.setExpenseId(id);
         expense.setTitle(title.trim());
         expense.setCategory(category.trim());
         expense.setAmount(amount);
@@ -75,36 +79,44 @@ public class ExpenseViewModel extends AndroidViewModel {
         expense.setNote(note.trim());
         expense.setPaymentMethod(paymentMethod.trim());
 
-        addExpenseState.setValue(Resource.loading());
-        repository.addExpense(expense, new ExpenseRepository.ExpenseCallback<Boolean>() {
+        expenseActionState.setValue(Resource.loading());
+        ExpenseRepository.ExpenseCallback<Boolean> callback = new ExpenseRepository.ExpenseCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean data) {
-                addExpenseState.postValue(Resource.success(true));
+                expenseActionState.postValue(Resource.success(true));
             }
 
             @Override
             public void onError(@NonNull String message) {
-                addExpenseState.postValue(Resource.error(message));
+                expenseActionState.postValue(Resource.error(message));
             }
-        });
+        };
+
+        if (id == null) {
+            repository.addExpense(expense, callback);
+        } else {
+            repository.updateExpense(expense, callback);
+        }
     }
 
     public void deleteExpense(@NonNull String expenseId) {
-        deleteExpenseState.setValue(Resource.loading());
         repository.deleteExpense(expenseId, new ExpenseRepository.ExpenseCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean data) {
-                deleteExpenseState.postValue(Resource.success(true));
+                // No need for expenseActionState success if we want instant deletion
             }
 
             @Override
             public void onError(@NonNull String message) {
-                deleteExpenseState.postValue(Resource.error(message));
+                expenseActionState.postValue(Resource.error(message));
             }
         });
     }
 
+    public void undoDelete(@NonNull String expenseId) {
+        repository.undoDelete(expenseId);
+    }
+
     public void loadExpenses() {
-        // Now automatically observed from Repository via Room
     }
 }

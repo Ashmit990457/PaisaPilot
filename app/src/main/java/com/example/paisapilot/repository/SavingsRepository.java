@@ -67,11 +67,27 @@ public class SavingsRepository {
         });
     }
 
+    public void updateGoal(@NonNull SavingsGoal goal, @NonNull SavingsCallback<Boolean> callback) {
+        executor.execute(() -> {
+            goal.setRemainingAmount(Math.max(0, goal.getTargetAmount() - goal.getSavedAmount()));
+            goal.setCompleted(goal.getSavedAmount() >= goal.getTargetAmount());
+            goalDao.update(Mapper.toEntity(goal, SyncStatus.PENDING_UPDATE));
+            syncManager.triggerSync();
+            callback.onSuccess(true);
+        });
+    }
+
     public void deleteGoal(@NonNull String goalId, @NonNull SavingsCallback<Boolean> callback) {
         executor.execute(() -> {
             goalDao.updateSyncStatus(goalId, SyncStatus.PENDING_DELETE);
             syncManager.triggerSync();
             callback.onSuccess(true);
+        });
+    }
+
+    public void undoDelete(@NonNull String goalId) {
+        executor.execute(() -> {
+            goalDao.updateSyncStatus(goalId, SyncStatus.SYNCED);
         });
     }
 

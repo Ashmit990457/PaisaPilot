@@ -59,13 +59,9 @@ public class ExpenseRepository {
                 expense.setExpenseId(FirebaseFirestore.getInstance().collection("users").document(userId).collection("expenses").document().getId());
             }
 
-            // Save to Room immediately
             expenseDao.insert(Mapper.toEntity(expense, SyncStatus.PENDING_INSERT));
-            
-            // Trigger sync
             syncManager.triggerSync();
 
-            // Update budget (in background)
             budgetRepository.updateBudgetSpent(expense.getCategory(), expense.getAmount(), new BudgetRepository.BudgetCallback<Boolean>() {
                 @Override
                 public void onSuccess(@Nullable Boolean data) {
@@ -74,17 +70,39 @@ public class ExpenseRepository {
 
                 @Override
                 public void onError(@NonNull String message) {
-                    callback.onSuccess(true); // Still added successfully
+                    callback.onSuccess(true);
                 }
             });
         });
     }
 
-    public void deleteExpense(@NonNull String expenseId, @NonNull ExpenseCallback<Boolean> callback) {
+    public void updateExpense(@NonNull Expense expense, @NonNull ExpenseCallback<Boolean> callback) {
         executor.execute(() -> {
-            expenseDao.updateSyncStatus(expenseId, SyncStatus.PENDING_DELETE);
+            expenseDao.update(Mapper.toEntity(expense, SyncStatus.PENDING_UPDATE));
             syncManager.triggerSync();
             callback.onSuccess(true);
+        });
+    }
+
+    public void deleteExpense(@NonNull String expenseId, @NonNull ExpenseCallback<Boolean> callback) {
+        executor.execute(() -> {
+            // Immediate UI update by marking as pending delete
+            // Our DAOs now filter out PENDING_DELETE items from LiveData
+            expenseDao.updateSyncStatus(expenseId, SyncStatus.PENDING_DELETE);
+            
+            // Trigger background sync to Firestore
+            syncManager.triggerSync();
+            
+            // Return success immediately (callback is still useful for UI handling)
+            callback.onSuccess(true);
+        });
+    }
+
+    public void undoDelete(@NonNull String expenseId) {
+        executor.execute(() -> {
+            // Restore by setting status back to SYNCED (or PENDING_UPDATE if we wanted to be more precise)
+            // But since it was already in Firestore, SYNCED is safer to avoid duplicates
+            expenseDao.updateSyncStatus(expenseId, SyncStatus.SYNCED);
         });
     }
 }

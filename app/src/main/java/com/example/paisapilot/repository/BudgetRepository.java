@@ -67,6 +67,15 @@ public class BudgetRepository {
         });
     }
 
+    public void updateBudget(@NonNull Budget budget, @NonNull BudgetCallback<Boolean> callback) {
+        executor.execute(() -> {
+            budget.setRemainingAmount(budget.getMonthlyLimit() - budget.getSpentAmount());
+            budgetDao.update(Mapper.toEntity(budget, SyncStatus.PENDING_UPDATE));
+            syncManager.triggerSync();
+            callback.onSuccess(true);
+        });
+    }
+
     public void updateBudgetSpent(@NonNull String category, double amountChange, @NonNull BudgetCallback<Boolean> callback) {
         String userId = sessionManager.getUserId();
         if (userId == null) {
@@ -92,6 +101,12 @@ public class BudgetRepository {
             budgetDao.updateSyncStatus(budgetId, SyncStatus.PENDING_DELETE);
             syncManager.triggerSync();
             callback.onSuccess(true);
+        });
+    }
+
+    public void undoDelete(@NonNull String budgetId) {
+        executor.execute(() -> {
+            budgetDao.updateSyncStatus(budgetId, SyncStatus.SYNCED);
         });
     }
 }

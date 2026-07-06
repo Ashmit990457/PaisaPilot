@@ -13,10 +13,10 @@ import java.util.List;
 
 @Dao
 public interface BudgetDao {
-    @Query("SELECT * FROM budgets WHERE userId = :userId")
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND syncStatus != 'PENDING_DELETE'")
     LiveData<List<BudgetEntity>> getBudgetsByUser(String userId);
 
-    @Query("SELECT * FROM budgets WHERE userId = :userId")
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND syncStatus != 'PENDING_DELETE'")
     List<BudgetEntity> getBudgetsByUserSync(String userId);
 
     @Query("SELECT * FROM budgets WHERE userId = :userId AND category = :category LIMIT 1")

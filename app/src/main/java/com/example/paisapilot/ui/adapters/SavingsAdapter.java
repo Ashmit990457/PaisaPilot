@@ -24,6 +24,7 @@ public class SavingsAdapter extends RecyclerView.Adapter<SavingsAdapter.SavingsV
     public interface OnGoalInteractionListener {
         void onAddSavings(SavingsGoal goal);
         void onDeleteGoal(SavingsGoal goal);
+        void onEditGoal(SavingsGoal goal);
     }
 
     public void setOnGoalInteractionListener(OnGoalInteractionListener listener) {
@@ -36,6 +37,10 @@ public class SavingsAdapter extends RecyclerView.Adapter<SavingsAdapter.SavingsV
             goals.addAll(newGoals);
         }
         notifyDataSetChanged();
+    }
+
+    public List<SavingsGoal> getGoals() {
+        return goals;
     }
 
     @NonNull
@@ -96,6 +101,11 @@ public class SavingsAdapter extends RecyclerView.Adapter<SavingsAdapter.SavingsV
 
             binding.btnDeleteGoal.setOnClickListener(v -> {
                 if (listener != null) listener.onDeleteGoal(goal);
+            });
+            
+            itemView.setOnLongClickListener(v -> {
+                if (listener != null) listener.onEditGoal(goal);
+                return true;
             });
         }
     }

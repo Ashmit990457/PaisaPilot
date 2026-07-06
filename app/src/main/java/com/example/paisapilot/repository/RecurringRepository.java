@@ -62,11 +62,45 @@ public class RecurringRepository {
         });
     }
 
+    public void updateRecurring(@NonNull RecurringExpense recurring, @NonNull RecurringCallback<Boolean> callback) {
+        executor.execute(() -> {
+            recurringBillDao.update(Mapper.toEntity(recurring, SyncStatus.PENDING_UPDATE));
+            syncManager.triggerSync();
+            callback.onSuccess(true);
+        });
+    }
+
     public void deleteRecurring(@NonNull String id, @NonNull RecurringCallback<Boolean> callback) {
         executor.execute(() -> {
             recurringBillDao.updateSyncStatus(id, SyncStatus.PENDING_DELETE);
             syncManager.triggerSync();
             callback.onSuccess(true);
         });
+    }
+
+    public void undoDelete(@NonNull String id) {
+        executor.execute(() -> {
+            recurringBillDao.updateSyncStatus(id, SyncStatus.SYNCED);
+        });
+    }
+
+    public void markPaid(@NonNull RecurringExpense item, @NonNull RecurringCallback<Boolean> callback) {
+        executor.execute(() -> {
+            // Logic to calculate next date and update
+            // Also adds a transaction (expense)
+            // For now, simple update
+            item.setNextDueDate(calculateNextDate(item.getNextDueDate()));
+            recurringBillDao.update(Mapper.toEntity(item, SyncStatus.PENDING_UPDATE));
+            syncManager.triggerSync();
+            callback.onSuccess(true);
+        });
+    }
+
+    private com.google.firebase.Timestamp calculateNextDate(com.google.firebase.Timestamp current) {
+        // Simple logic for monthly for now
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(current.toDate());
+        cal.add(java.util.Calendar.MONTH, 1);
+        return new com.google.firebase.Timestamp(cal.getTime());
     }
 }

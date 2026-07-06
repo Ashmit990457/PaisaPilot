@@ -98,6 +98,16 @@
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMarkPaid"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mark Paid"
+            android:textColor="@color/accent_green"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnDeleteRecurring" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDeleteRecurring"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"

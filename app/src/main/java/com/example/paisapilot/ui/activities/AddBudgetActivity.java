@@ -1,5 +1,6 @@
 package com.example.paisapilot.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -20,6 +21,8 @@ public class AddBudgetActivity extends BaseActivity {
     private ActivityAddBudgetBinding binding;
     private BudgetViewModel viewModel;
     private boolean isSaving = false;
+    private String budgetIdToEdit = null;
+    private double currentSpent = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +41,23 @@ public class AddBudgetActivity extends BaseActivity {
 
         setupCategorySpinner();
         observeViewModel();
+        prefillFromIntent();
 
         binding.btnSaveBudget.setOnClickListener(v -> onSaveBudgetClicked());
+    }
+
+    private void prefillFromIntent() {
+        Intent intent = getIntent();
+        if (intent == null) return;
+        
+        budgetIdToEdit = intent.getStringExtra("edit_budget_id");
+        if (budgetIdToEdit != null) {
+            binding.toolbarAddBudget.setTitle("Edit Budget");
+            binding.btnSaveBudget.setText("Update Budget");
+            binding.spinnerBudgetCategory.setText(intent.getStringExtra("edit_category"), false);
+            binding.etBudgetLimit.setText(intent.getStringExtra("edit_limit"));
+            currentSpent = intent.getDoubleExtra("edit_spent", 0);
+        }
     }
 
     private void setupCategorySpinner() {
@@ -51,7 +69,6 @@ public class AddBudgetActivity extends BaseActivity {
     private void observeViewModel() {
         viewModel.getCreateBudgetState().observe(this, resource -> {
             if (resource == null) return;
-
             switch (resource.getStatus()) {
                 case LOADING:
                     binding.progressSaveBudget.setVisibility(View.VISIBLE);
@@ -59,7 +76,7 @@ public class AddBudgetActivity extends BaseActivity {
                     break;
                 case SUCCESS:
                     binding.progressSaveBudget.setVisibility(View.GONE);
-                    Toast.makeText(this, "Budget saved successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, budgetIdToEdit == null ? "Budget saved" : "Budget updated", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                     break;
@@ -76,13 +93,13 @@ public class AddBudgetActivity extends BaseActivity {
     private void onSaveBudgetClicked() {
         if (isSaving) return;
 
-        String category = binding.spinnerBudgetCategory.getText() != null ? binding.spinnerBudgetCategory.getText().toString() : "";
+        String category = binding.spinnerBudgetCategory.getText().toString();
         String limit = binding.etBudgetLimit.getText() != null ? binding.etBudgetLimit.getText().toString() : "";
 
         isSaving = true;
         binding.btnSaveBudget.setEnabled(false);
         binding.progressSaveBudget.setVisibility(View.VISIBLE);
 
-        viewModel.createBudget(category, limit);
+        viewModel.saveBudget(budgetIdToEdit, category, limit, currentSpent);
     }
 }

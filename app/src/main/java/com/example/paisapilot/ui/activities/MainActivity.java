@@ -23,6 +23,7 @@ import com.example.paisapilot.databinding.ActivityMainBinding;
 import com.example.paisapilot.databinding.LayoutDashboardCardBinding;
 import com.example.paisapilot.databinding.LayoutForecastCardBinding;
 import com.example.paisapilot.model.DashboardData;
+import com.example.paisapilot.model.Expense;
 import com.example.paisapilot.model.Forecast;
 import com.example.paisapilot.model.RecurringExpense;
 import com.example.paisapilot.model.SavingsGoal;
@@ -45,8 +46,10 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -159,7 +162,6 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupRecyclerViews() {
-        // Shared item decoration for spacing
         int spacing = (int) (16 * getResources().getDisplayMetrics().density);
         androidx.recyclerview.widget.RecyclerView.ItemDecoration decoration = new androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
             @Override
@@ -168,39 +170,64 @@ public class MainActivity extends BaseActivity {
             }
         };
 
-        // Expenses
         expenseAdapter = new ExpenseAdapter();
-        expenseAdapter.setOnExpenseLongClickListener(expense -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Delete Expense")
-                    .setMessage("Are you sure you want to delete this expense?")
-                    .setPositiveButton("Delete", (dialog, which) -> {
-                        expenseViewModel.deleteExpense(expense.getExpenseId());
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        expenseAdapter.setOnExpenseLongClickListener(this::showExpenseOptions);
         binding.rvExpenses.setLayoutManager(new LinearLayoutManager(this));
         binding.rvExpenses.setAdapter(expenseAdapter);
         binding.rvExpenses.addItemDecoration(decoration);
 
-        // Insights
         insightAdapter = new InsightAdapter();
         binding.rvInsights.setLayoutManager(new LinearLayoutManager(this));
         binding.rvInsights.setAdapter(insightAdapter);
         binding.rvInsights.addItemDecoration(decoration);
 
-        // Savings Preview
         savingsPreviewAdapter = new SavingsPreviewAdapter();
         binding.rvSavingsPreview.setLayoutManager(new LinearLayoutManager(this));
         binding.rvSavingsPreview.setAdapter(savingsPreviewAdapter);
         binding.rvSavingsPreview.addItemDecoration(decoration);
 
-        // Recurring Preview
         recurringPreviewAdapter = new RecurringPreviewAdapter();
         binding.rvRecurringPreview.setLayoutManager(new LinearLayoutManager(this));
         binding.rvRecurringPreview.setAdapter(recurringPreviewAdapter);
         binding.rvRecurringPreview.addItemDecoration(decoration);
+    }
+
+    private void showExpenseOptions(Expense expense) {
+        String[] options = {"Edit", "Delete"};
+        new AlertDialog.Builder(this)
+                .setTitle("Expense Options")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        editExpense(expense);
+                    } else {
+                        deleteExpenseWithUndo(expense);
+                    }
+                })
+                .show();
+    }
+
+    private void editExpense(Expense expense) {
+        Intent intent = new Intent(this, AddExpenseActivity.class);
+        intent.putExtra("edit_expense_id", expense.getExpenseId());
+        intent.putExtra("edit_title", expense.getTitle());
+        intent.putExtra("edit_amount", String.valueOf(expense.getAmount()));
+        intent.putExtra("edit_category", expense.getCategory());
+        intent.putExtra("edit_payment", expense.getPaymentMethod());
+        intent.putExtra("edit_note", expense.getNote());
+        if (expense.getDate() != null) {
+            intent.putExtra("edit_date", expense.getDate().toDate().getTime());
+        }
+        startActivityForResult(intent, ADD_EXPENSE_REQUEST);
+    }
+
+    private void deleteExpenseWithUndo(Expense expense) {
+        expenseViewModel.deleteExpense(expense.getExpenseId());
+        
+        Snackbar.make(binding.main, "Expense deleted", Snackbar.LENGTH_LONG)
+                .setAction("Undo", v -> {
+                    expenseViewModel.undoDelete(expense.getExpenseId());
+                })
+                .show();
     }
 
     private void observeViewModels() {
@@ -234,7 +261,6 @@ public class MainActivity extends BaseActivity {
             switch (resource.getStatus()) {
                 case SUCCESS:
                     if (resource.getData() != null && !resource.getData().isEmpty()) {
-                        // Take only top 5
                         int limit = Math.min(resource.getData().size(), 5);
                         expenseAdapter.setExpenses(resource.getData().subList(0, limit));
                         binding.rvExpenses.setVisibility(View.VISIBLE);
@@ -277,26 +303,23 @@ public class MainActivity extends BaseActivity {
         expenseViewModel.getDeleteExpenseState().observe(this, resource -> {
             if (resource == null) return;
             if (resource.getStatus() == com.example.paisapilot.model.Resource.Status.SUCCESS) {
-                Toast.makeText(this, "Expense deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Expense updated/deleted", Toast.LENGTH_SHORT).show();
                 loadData();
             }
         });
     }
 
     private void updateDashboardUI(DashboardData data) {
-        // Update Cards
         updateCard(binding.cardTotalExpense, "Total Expenses", String.format(Locale.getDefault(), "₹%.2f", data.getTotalExpense()));
         updateCard(binding.cardTotalBudget, "Total Budget", String.format(Locale.getDefault(), "₹%.2f", data.getTotalBudget()));
         updateCard(binding.cardRemainingBudget, "Remaining Budget", String.format(Locale.getDefault(), "₹%.2f", data.getRemainingBudget()));
         updateCard(binding.cardExpenseCount, "Expenses Count", String.valueOf(data.getExpenseCount()));
         updateCard(binding.cardHighestCategory, "Highest Category", data.getHighestCategory());
 
-        // Update Forecast
         if (data.getForecast() != null) {
             updateForecastUI(data.getForecast());
         }
 
-        // Update Charts
         setupPieChart(data.getCategoryWiseExpenses());
         setupBarChart(data.getWeeklyExpenses());
     }
@@ -321,17 +344,17 @@ public class MainActivity extends BaseActivity {
         int bgColor;
         switch (forecast.getRiskLevel()) {
             case SAFE:
-                color = Color.parseColor("#15803D"); // Dark Green
-                bgColor = Color.parseColor("#DCFCE7"); // Light Green
+                color = Color.parseColor("#15803D");
+                bgColor = Color.parseColor("#DCFCE7");
                 break;
             case MODERATE:
-                color = Color.parseColor("#92400E"); // Dark Orange
-                bgColor = Color.parseColor("#FEF3C7"); // Light Orange
+                color = Color.parseColor("#92400E");
+                bgColor = Color.parseColor("#FEF3C7");
                 break;
             case HIGH:
             default:
-                color = Color.parseColor("#991B1B"); // Dark Red
-                bgColor = Color.parseColor("#FEE2E2"); // Light Red
+                color = Color.parseColor("#991B1B");
+                bgColor = Color.parseColor("#FEE2E2");
                 break;
         }
         forecastBinding.chipSpendingStatus.setTextColor(color);

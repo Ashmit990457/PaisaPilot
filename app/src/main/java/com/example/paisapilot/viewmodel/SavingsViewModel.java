@@ -3,6 +3,7 @@ package com.example.paisapilot.viewmodel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -63,6 +64,10 @@ public class SavingsViewModel extends AndroidViewModel {
     }
 
     public void addGoal(String title, String targetAmount, String savedAmount, Timestamp targetDate) {
+        saveGoal(null, title, targetAmount, savedAmount, targetDate);
+    }
+
+    public void saveGoal(@Nullable String id, String title, String targetAmount, String savedAmount, Timestamp targetDate) {
         ValidationResult validation = validateGoalInput(title, targetAmount, savedAmount, targetDate);
         if (!validation.isSuccess()) {
             goalActionState.setValue(Resource.error(validation.getErrorMessage()));
@@ -72,10 +77,10 @@ public class SavingsViewModel extends AndroidViewModel {
         double target = Double.parseDouble(targetAmount);
         double saved = Double.parseDouble(savedAmount);
 
-        SavingsGoal goal = new SavingsGoal(null, null, title, target, saved, targetDate, null, false);
+        SavingsGoal goal = new SavingsGoal(id, null, title, target, saved, targetDate, null, false);
         
         goalActionState.setValue(Resource.loading());
-        repository.addGoal(goal, new SavingsRepository.SavingsCallback<Boolean>() {
+        SavingsRepository.SavingsCallback<Boolean> callback = new SavingsRepository.SavingsCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean data) {
                 goalActionState.postValue(Resource.success(true));
@@ -85,11 +90,16 @@ public class SavingsViewModel extends AndroidViewModel {
             public void onError(@NonNull String message) {
                 goalActionState.postValue(Resource.error(message));
             }
-        });
+        };
+
+        if (id == null) {
+            repository.addGoal(goal, callback);
+        } else {
+            repository.updateGoal(goal, callback);
+        }
     }
 
     public void loadGoals() {
-        // Automatically observed
     }
 
     public void addSavings(String goalId, String amountStr) {
@@ -120,11 +130,9 @@ public class SavingsViewModel extends AndroidViewModel {
     }
 
     public void deleteGoal(String goalId) {
-        goalActionState.setValue(Resource.loading());
         repository.deleteGoal(goalId, new SavingsRepository.SavingsCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean data) {
-                goalActionState.postValue(Resource.success(true));
             }
 
             @Override
@@ -132,5 +140,9 @@ public class SavingsViewModel extends AndroidViewModel {
                 goalActionState.postValue(Resource.error(message));
             }
         });
+    }
+
+    public void undoDelete(String goalId) {
+        repository.undoDelete(goalId);
     }
 }

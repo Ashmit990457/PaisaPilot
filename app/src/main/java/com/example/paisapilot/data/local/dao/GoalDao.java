@@ -13,10 +13,10 @@ import java.util.List;
 
 @Dao
 public interface GoalDao {
-    @Query("SELECT * FROM goals WHERE userId = :userId")
+    @Query("SELECT * FROM goals WHERE userId = :userId AND syncStatus != 'PENDING_DELETE'")
     LiveData<List<GoalEntity>> getGoalsByUser(String userId);
 
-    @Query("SELECT * FROM goals WHERE userId = :userId")
+    @Query("SELECT * FROM goals WHERE userId = :userId AND syncStatus != 'PENDING_DELETE'")
     List<GoalEntity> getGoalsByUserSync(String userId);
 
     @Query("SELECT * FROM goals WHERE goalId = :goalId LIMIT 1")

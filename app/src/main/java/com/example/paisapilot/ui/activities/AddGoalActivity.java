@@ -1,6 +1,7 @@
 package com.example.paisapilot.ui.activities;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -28,6 +29,7 @@ public class AddGoalActivity extends BaseActivity {
     private SavingsViewModel viewModel;
     private Timestamp selectedDate;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private String goalIdToEdit = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +49,30 @@ public class AddGoalActivity extends BaseActivity {
         setupGoalTypeSpinner();
         setupDatePicker();
         observeViewModel();
+        prefillFromIntent();
 
         binding.btnSaveGoal.setOnClickListener(v -> onSaveGoalClicked());
+    }
+
+    private void prefillFromIntent() {
+        Intent intent = getIntent();
+        if (intent == null) return;
+
+        goalIdToEdit = intent.getStringExtra("edit_goal_id");
+        if (goalIdToEdit != null) {
+            binding.toolbarAddGoal.setTitle("Edit Savings Goal");
+            binding.btnSaveGoal.setText("Update Goal");
+            binding.etGoalTitle.setText(intent.getStringExtra("edit_title"));
+            binding.etTargetAmount.setText(intent.getStringExtra("edit_target"));
+            binding.etSavedAmount.setText(intent.getStringExtra("edit_saved"));
+            
+            long dateLong = intent.getLongExtra("edit_date", -1);
+            if (dateLong != -1) {
+                Date date = new Date(dateLong);
+                selectedDate = new Timestamp(date);
+                binding.etTargetDate.setText(dateFormat.format(date));
+            }
+        }
     }
 
     private void setupGoalTypeSpinner() {
@@ -87,8 +111,7 @@ public class AddGoalActivity extends BaseActivity {
                     break;
                 case SUCCESS:
                     binding.progressSaveGoal.setVisibility(View.GONE);
-                    binding.btnSaveGoal.setEnabled(true);
-                    Toast.makeText(this, "Savings goal saved!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, goalIdToEdit == null ? "Goal created" : "Goal updated", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                     break;
@@ -106,6 +129,6 @@ public class AddGoalActivity extends BaseActivity {
         String target = binding.etTargetAmount.getText().toString();
         String saved = binding.etSavedAmount.getText().toString();
 
-        viewModel.addGoal(title, target, saved, selectedDate);
+        viewModel.saveGoal(goalIdToEdit, title, target, saved, selectedDate);
     }
 }

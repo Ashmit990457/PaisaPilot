@@ -27,16 +27,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Activity to add a new expense.
- * Handles only UI interactions and delegates validation/data operations to ExpenseViewModel.
- */
 public class AddExpenseActivity extends AppCompatActivity {
 
     private ActivityAddExpenseBinding binding;
     private ExpenseViewModel viewModel;
     private Timestamp selectedDate;
     private boolean isSaving = false;
+    private String expenseIdToEdit = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,21 +65,35 @@ public class AddExpenseActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent == null) return;
 
-        String title = intent.getStringExtra("prefill_title");
-        String amount = intent.getStringExtra("prefill_amount");
-        String category = intent.getStringExtra("prefill_category");
-        String payment = intent.getStringExtra("prefill_payment");
-        String dateStr = intent.getStringExtra("prefill_date"); // YYYY-MM-DD
-
-        if (title != null) binding.etExpenseTitle.setText(title);
-        if (amount != null) binding.etExpenseAmount.setText(amount);
-        if (category != null) {
-            binding.spinnerCategory.setText(category, false);
+        expenseIdToEdit = intent.getStringExtra("edit_expense_id");
+        if (expenseIdToEdit != null) {
+            getSupportActionBar().setTitle("Edit Expense");
+            binding.btnSaveExpense.setText("Update Transaction");
+            
+            binding.etExpenseTitle.setText(intent.getStringExtra("edit_title"));
+            binding.etExpenseAmount.setText(intent.getStringExtra("edit_amount"));
+            binding.spinnerCategory.setText(intent.getStringExtra("edit_category"), false);
+            binding.spinnerPaymentMethod.setText(intent.getStringExtra("edit_payment"), false);
+            binding.etExpenseNote.setText(intent.getStringExtra("edit_note"));
+            
+            long dateLong = intent.getLongExtra("edit_date", -1);
+            if (dateLong != -1) {
+                Date date = new Date(dateLong);
+                selectedDate = new Timestamp(date);
+                updateSelectedDateText(date);
+            }
         }
-        if (payment != null) {
-            binding.spinnerPaymentMethod.setText(payment, false);
-        }
 
+        String pTitle = intent.getStringExtra("prefill_title");
+        if (pTitle != null) binding.etExpenseTitle.setText(pTitle);
+        String pAmount = intent.getStringExtra("prefill_amount");
+        if (pAmount != null) binding.etExpenseAmount.setText(pAmount);
+        String pCat = intent.getStringExtra("prefill_category");
+        if (pCat != null) binding.spinnerCategory.setText(pCat, false);
+        String pPay = intent.getStringExtra("prefill_payment");
+        if (pPay != null) binding.spinnerPaymentMethod.setText(pPay, false);
+
+        String dateStr = intent.getStringExtra("prefill_date");
         if (dateStr != null) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -100,7 +111,6 @@ public class AddExpenseActivity extends AppCompatActivity {
             if (confidence >= 90) msg = "✓ High Confidence Scan";
             else if (confidence >= 70) msg = "⚠ Please verify detected information";
             else msg = "AI could not confidently read this receipt.";
-            
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         }
     }
@@ -121,9 +131,7 @@ public class AddExpenseActivity extends AppCompatActivity {
         updateSelectedDateText(selectedDate.toDate());
         binding.etExpenseDate.setOnClickListener(v -> openDatePicker());
         binding.etExpenseDate.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                openDatePicker();
-            }
+            if (hasFocus) openDatePicker();
         });
     }
 
@@ -135,14 +143,8 @@ public class AddExpenseActivity extends AppCompatActivity {
                 this,
                 (view, year, month, dayOfMonth) -> {
                     Calendar selected = Calendar.getInstance();
-                    selected.set(Calendar.YEAR, year);
-                    selected.set(Calendar.MONTH, month);
-                    selected.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                    selected.set(Calendar.HOUR_OF_DAY, 0);
-                    selected.set(Calendar.MINUTE, 0);
-                    selected.set(Calendar.SECOND, 0);
+                    selected.set(year, month, dayOfMonth, 0, 0, 0);
                     selected.set(Calendar.MILLISECOND, 0);
-
                     Date date = selected.getTime();
                     selectedDate = new Timestamp(date);
                     updateSelectedDateText(date);
@@ -163,22 +165,18 @@ public class AddExpenseActivity extends AppCompatActivity {
     private void observeViewModel() {
         viewModel.getAddExpenseState().observe(this, resource -> {
             if (resource == null) return;
-            android.util.Log.d("DEBUG_EXPENSE", "AddExpenseActivity: Status updated to " + resource.getStatus());
-
             switch (resource.getStatus()) {
                 case LOADING:
                     binding.progressSaveExpense.setVisibility(View.VISIBLE);
                     binding.btnSaveExpense.setEnabled(false);
                     break;
                 case SUCCESS:
-                    android.util.Log.d("DEBUG_EXPENSE", "AddExpenseActivity: Success received");
                     binding.progressSaveExpense.setVisibility(View.GONE);
-                    Toast.makeText(this, "Expense saved successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, expenseIdToEdit == null ? "Expense saved" : "Expense updated", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                     break;
                 case ERROR:
-                    android.util.Log.e("DEBUG_EXPENSE", "AddExpenseActivity: Error received: " + resource.getMessage());
                     isSaving = false;
                     binding.progressSaveExpense.setVisibility(View.GONE);
                     binding.btnSaveExpense.setEnabled(true);
@@ -189,25 +187,18 @@ public class AddExpenseActivity extends AppCompatActivity {
     }
 
     private void onSaveExpenseClicked() {
-        if (isSaving) {
-            return;
-        }
+        if (isSaving) return;
+
+        String title = binding.etExpenseTitle.getText() != null ? binding.etExpenseTitle.getText().toString() : "";
+        String amount = binding.etExpenseAmount.getText() != null ? binding.etExpenseAmount.getText().toString() : "";
+        String note = binding.etExpenseNote.getText() != null ? binding.etExpenseNote.getText().toString() : "";
+        String category = binding.spinnerCategory.getText().toString();
+        String paymentMethod = binding.spinnerPaymentMethod.getText().toString();
 
         isSaving = true;
         binding.btnSaveExpense.setEnabled(false);
         binding.progressSaveExpense.setVisibility(View.VISIBLE);
 
-        String title = binding.etExpenseTitle.getText() != null ? binding.etExpenseTitle.getText().toString() : "";
-        String amount = binding.etExpenseAmount.getText() != null ? binding.etExpenseAmount.getText().toString() : "";
-        String note = binding.etExpenseNote.getText() != null ? binding.etExpenseNote.getText().toString() : "";
-
-        String category = binding.spinnerCategory.getText() != null
-                ? binding.spinnerCategory.getText().toString()
-                : "";
-        String paymentMethod = binding.spinnerPaymentMethod.getText() != null
-                ? binding.spinnerPaymentMethod.getText().toString()
-                : "";
-
-        viewModel.addExpense(title, category, amount, selectedDate, note, paymentMethod);
+        viewModel.saveExpense(expenseIdToEdit, title, category, amount, selectedDate, note, paymentMethod);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.paisapilot.ui.activities;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -29,6 +30,7 @@ public class AddRecurringExpenseActivity extends BaseActivity {
     private RecurringViewModel viewModel;
     private Timestamp selectedDate;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private String recurringIdToEdit = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +50,32 @@ public class AddRecurringExpenseActivity extends BaseActivity {
         setupFrequencySpinner();
         setupDatePicker();
         observeViewModel();
+        prefillFromIntent();
 
         binding.btnSaveRecurring.setOnClickListener(v -> onSaveClicked());
+    }
+
+    private void prefillFromIntent() {
+        Intent intent = getIntent();
+        if (intent == null) return;
+
+        recurringIdToEdit = intent.getStringExtra("edit_recurring_id");
+        if (recurringIdToEdit != null) {
+            binding.toolbarAddRecurring.setTitle("Edit Recurring Bill");
+            binding.btnSaveRecurring.setText("Update Bill");
+            binding.etRecurringTitle.setText(intent.getStringExtra("edit_title"));
+            binding.etRecurringAmount.setText(intent.getStringExtra("edit_amount"));
+            binding.spinnerFrequency.setText(intent.getStringExtra("edit_frequency"), false);
+            binding.switchReminder.setChecked(intent.getBooleanExtra("edit_reminder", true));
+            binding.switchAutoAdd.setChecked(intent.getBooleanExtra("edit_auto_add", false));
+
+            long dateLong = intent.getLongExtra("edit_date", -1);
+            if (dateLong != -1) {
+                Date date = new Date(dateLong);
+                selectedDate = new Timestamp(date);
+                binding.etNextDueDate.setText(dateFormat.format(date));
+            }
+        }
     }
 
     private void setupFrequencySpinner() {
@@ -88,8 +114,7 @@ public class AddRecurringExpenseActivity extends BaseActivity {
                     break;
                 case SUCCESS:
                     binding.progressSaveRecurring.setVisibility(View.GONE);
-                    binding.btnSaveRecurring.setEnabled(true);
-                    Toast.makeText(this, "Recurring bill saved!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, recurringIdToEdit == null ? "Bill saved" : "Bill updated", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
                     finish();
                     break;
@@ -106,7 +131,7 @@ public class AddRecurringExpenseActivity extends BaseActivity {
         String title = binding.etRecurringTitle.getText() != null ? binding.etRecurringTitle.getText().toString() : "";
         String amount = binding.etRecurringAmount.getText() != null ? binding.etRecurringAmount.getText().toString() : "";
         
-        String freqStr = binding.spinnerFrequency.getText() != null ? binding.spinnerFrequency.getText().toString() : "";
+        String freqStr = binding.spinnerFrequency.getText().toString();
         RecurringExpense.Frequency frequency = null;
         try {
             frequency = RecurringExpense.Frequency.valueOf(freqStr.toUpperCase());
@@ -115,6 +140,6 @@ public class AddRecurringExpenseActivity extends BaseActivity {
         boolean reminder = binding.switchReminder.isChecked();
         boolean autoAdd = binding.switchAutoAdd.isChecked();
 
-        viewModel.createRecurring(title, "Other", amount, frequency, selectedDate, reminder, autoAdd);
+        viewModel.saveRecurring(recurringIdToEdit, title, "Other", amount, frequency, selectedDate, reminder, autoAdd);
     }
 }
