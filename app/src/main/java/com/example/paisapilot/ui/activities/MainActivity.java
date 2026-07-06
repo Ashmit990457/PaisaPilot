@@ -25,8 +25,6 @@ import com.example.paisapilot.databinding.LayoutForecastCardBinding;
 import com.example.paisapilot.model.DashboardData;
 import com.example.paisapilot.model.Expense;
 import com.example.paisapilot.model.Forecast;
-import com.example.paisapilot.model.RecurringExpense;
-import com.example.paisapilot.model.SavingsGoal;
 import com.example.paisapilot.ui.adapters.ExpenseAdapter;
 import com.example.paisapilot.ui.adapters.InsightAdapter;
 import com.example.paisapilot.ui.adapters.RecurringPreviewAdapter;
@@ -49,7 +47,6 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -162,48 +159,32 @@ public class MainActivity extends BaseActivity {
     }
 
     private void setupRecyclerViews() {
-        int spacing = (int) (16 * getResources().getDisplayMetrics().density);
-        androidx.recyclerview.widget.RecyclerView.ItemDecoration decoration = new androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view, @NonNull androidx.recyclerview.widget.RecyclerView parent, @NonNull androidx.recyclerview.widget.RecyclerView.State state) {
-                outRect.bottom = spacing;
-            }
-        };
-
         expenseAdapter = new ExpenseAdapter();
-        expenseAdapter.setOnExpenseLongClickListener(this::showExpenseOptions);
+        expenseAdapter.setOnExpenseInteractionListener(new ExpenseAdapter.OnExpenseInteractionListener() {
+            @Override
+            public void onEditExpense(Expense expense) {
+                editExpense(expense);
+            }
+
+            @Override
+            public void onDeleteExpense(Expense expense) {
+                deleteExpenseWithUndo(expense);
+            }
+        });
         binding.rvExpenses.setLayoutManager(new LinearLayoutManager(this));
         binding.rvExpenses.setAdapter(expenseAdapter);
-        binding.rvExpenses.addItemDecoration(decoration);
 
         insightAdapter = new InsightAdapter();
         binding.rvInsights.setLayoutManager(new LinearLayoutManager(this));
         binding.rvInsights.setAdapter(insightAdapter);
-        binding.rvInsights.addItemDecoration(decoration);
 
         savingsPreviewAdapter = new SavingsPreviewAdapter();
         binding.rvSavingsPreview.setLayoutManager(new LinearLayoutManager(this));
         binding.rvSavingsPreview.setAdapter(savingsPreviewAdapter);
-        binding.rvSavingsPreview.addItemDecoration(decoration);
 
         recurringPreviewAdapter = new RecurringPreviewAdapter();
         binding.rvRecurringPreview.setLayoutManager(new LinearLayoutManager(this));
         binding.rvRecurringPreview.setAdapter(recurringPreviewAdapter);
-        binding.rvRecurringPreview.addItemDecoration(decoration);
-    }
-
-    private void showExpenseOptions(Expense expense) {
-        String[] options = {"Edit", "Delete"};
-        new AlertDialog.Builder(this)
-                .setTitle("Expense Options")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        editExpense(expense);
-                    } else {
-                        deleteExpenseWithUndo(expense);
-                    }
-                })
-                .show();
     }
 
     private void editExpense(Expense expense) {
@@ -297,14 +278,6 @@ public class MainActivity extends BaseActivity {
                 if (resource.getData() != null) {
                     recurringPreviewAdapter.setList(resource.getData());
                 }
-            }
-        });
-
-        expenseViewModel.getDeleteExpenseState().observe(this, resource -> {
-            if (resource == null) return;
-            if (resource.getStatus() == com.example.paisapilot.model.Resource.Status.SUCCESS) {
-                Toast.makeText(this, "Expense updated/deleted", Toast.LENGTH_SHORT).show();
-                loadData();
             }
         });
     }

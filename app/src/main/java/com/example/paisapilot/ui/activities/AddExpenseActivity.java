@@ -21,10 +21,8 @@ import com.example.paisapilot.viewmodel.ExpenseViewModel;
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 public class AddExpenseActivity extends AppCompatActivity {
@@ -59,6 +57,8 @@ public class AddExpenseActivity extends AppCompatActivity {
         prefillFromIntent();
 
         binding.btnSaveExpense.setOnClickListener(v -> onSaveExpenseClicked());
+        
+        binding.toolbarAddExpense.setNavigationOnClickListener(v -> finish());
     }
 
     private void prefillFromIntent() {
@@ -67,13 +67,22 @@ public class AddExpenseActivity extends AppCompatActivity {
 
         expenseIdToEdit = intent.getStringExtra("edit_expense_id");
         if (expenseIdToEdit != null) {
-            getSupportActionBar().setTitle("Edit Expense");
-            binding.btnSaveExpense.setText("Update Transaction");
+            binding.toolbarAddExpense.setTitle("Edit Expense");
+            binding.btnSaveExpense.setText("Update Expense");
             
             binding.etExpenseTitle.setText(intent.getStringExtra("edit_title"));
             binding.etExpenseAmount.setText(intent.getStringExtra("edit_amount"));
-            binding.spinnerCategory.setText(intent.getStringExtra("edit_category"), false);
-            binding.spinnerPaymentMethod.setText(intent.getStringExtra("edit_payment"), false);
+            
+            String category = intent.getStringExtra("edit_category");
+            if (category != null) {
+                binding.spinnerCategory.setText(category, false);
+            }
+            
+            String payment = intent.getStringExtra("edit_payment");
+            if (payment != null) {
+                binding.spinnerPaymentMethod.setText(payment, false);
+            }
+            
             binding.etExpenseNote.setText(intent.getStringExtra("edit_note"));
             
             long dateLong = intent.getLongExtra("edit_date", -1);
@@ -82,8 +91,12 @@ public class AddExpenseActivity extends AppCompatActivity {
                 selectedDate = new Timestamp(date);
                 updateSelectedDateText(date);
             }
+        } else {
+            binding.toolbarAddExpense.setTitle("Add Expense");
+            binding.btnSaveExpense.setText("Save Expense");
         }
 
+        // Handle possible AI pre-fills
         String pTitle = intent.getStringExtra("prefill_title");
         if (pTitle != null) binding.etExpenseTitle.setText(pTitle);
         String pAmount = intent.getStringExtra("prefill_amount");

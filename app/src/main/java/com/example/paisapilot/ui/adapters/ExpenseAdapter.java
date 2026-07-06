@@ -1,7 +1,9 @@
 package com.example.paisapilot.ui.adapters;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,14 +20,15 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
     private final List<Expense> expenses = new ArrayList<>();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-    private OnExpenseLongClickListener longClickListener;
+    private OnExpenseInteractionListener interactionListener;
 
-    public interface OnExpenseLongClickListener {
-        void onExpenseLongClick(Expense expense);
+    public interface OnExpenseInteractionListener {
+        void onEditExpense(Expense expense);
+        void onDeleteExpense(Expense expense);
     }
 
-    public void setOnExpenseLongClickListener(OnExpenseLongClickListener listener) {
-        this.longClickListener = listener;
+    public void setOnExpenseInteractionListener(OnExpenseInteractionListener listener) {
+        this.interactionListener = listener;
     }
 
     public void setExpenses(List<Expense> newExpenses) {
@@ -72,8 +75,9 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
         public void bind(Expense expense) {
             binding.tvExpenseTitle.setText(expense.getTitle());
-            binding.tvExpenseCategory.setText(expense.getCategory());
+            binding.chipExpenseCategory.setText(expense.getCategory());
             binding.tvExpenseAmount.setText(String.format(Locale.getDefault(), "-₹%.2f", expense.getAmount()));
+            binding.tvPaymentMethod.setText(expense.getPaymentMethod());
             
             if (expense.getDate() != null) {
                 binding.tvExpenseDate.setText(dateFormat.format(expense.getDate().toDate()));
@@ -81,13 +85,31 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
                 binding.tvExpenseDate.setText("");
             }
 
-            itemView.setOnLongClickListener(v -> {
-                if (longClickListener != null) {
-                    longClickListener.onExpenseLongClick(expense);
-                    return true;
+            binding.ivExpenseOptions.setOnClickListener(v -> showPopupMenu(v, expense));
+            
+            itemView.setOnClickListener(v -> {
+                if (interactionListener != null) {
+                    interactionListener.onEditExpense(expense);
                 }
-                return false;
             });
+        }
+
+        private void showPopupMenu(View view, Expense expense) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            popup.getMenu().add("Edit");
+            popup.getMenu().add("Delete");
+            
+            popup.setOnMenuItemClickListener(item -> {
+                if (interactionListener == null) return false;
+                
+                if (item.getTitle().equals("Edit")) {
+                    interactionListener.onEditExpense(expense);
+                } else if (item.getTitle().equals("Delete")) {
+                    interactionListener.onDeleteExpense(expense);
+                }
+                return true;
+            });
+            popup.show();
         }
     }
 }
