@@ -12,53 +12,61 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.example.paisapilot.R;
 import com.example.paisapilot.ui.activities.MainActivity;
 
 public class NotificationHelper {
-    public static final String CHANNEL_ID = "bill_reminders";
-    public static final String CHANNEL_NAME = "Bill Reminders";
+    public static final String CHANNEL_GENERAL = "general";
+    public static final String CHANNEL_BUDGET = "budget_alerts";
+    public static final String CHANNEL_GOALS = "savings_goals";
+    public static final String CHANNEL_RECURRING = "recurring_bills";
+    public static final String CHANNEL_DAILY = "daily_summary";
+    public static final String CHANNEL_WEEKLY = "weekly_summary";
+    public static final String CHANNEL_MONTHLY = "monthly_summary";
+    public static final String CHANNEL_AI = "ai_insights";
 
-    public static void showBillReminder(Context context, String title, String content) {
-        createNotificationChannel(context);
+    public static void showNotification(Context context, String channelId, int id, String title, String content) {
+        createAllChannels(context);
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, id, intent, PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(title)
                 .setContentText(content)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(id, builder.build());
+        }
+    }
+    
+    // For backward compatibility with existing code
+    public static void showBillReminder(Context context, String title, String content) {
+        showNotification(context, CHANNEL_RECURRING, (int) System.currentTimeMillis(), title, content);
     }
 
     public static void showNotification(Context context, String title, String message) {
-        createNotificationChannel(context);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
-        }
+        showNotification(context, CHANNEL_GENERAL, (int) System.currentTimeMillis(), title, message);
     }
 
-    private static void createNotificationChannel(Context context) {
+    public static void createAllChannels(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Notifications for upcoming and processed bills");
-            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            NotificationManager manager = context.getSystemService(NotificationManager.class);
+            
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_GENERAL, "General", NotificationManager.IMPORTANCE_DEFAULT));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_BUDGET, "Budget Alerts", NotificationManager.IMPORTANCE_HIGH));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_GOALS, "Savings Goals", NotificationManager.IMPORTANCE_DEFAULT));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_RECURRING, "Recurring Bills", NotificationManager.IMPORTANCE_HIGH));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_DAILY, "Daily Summary", NotificationManager.IMPORTANCE_DEFAULT));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_WEEKLY, "Weekly Summary", NotificationManager.IMPORTANCE_DEFAULT));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_MONTHLY, "Monthly Summary", NotificationManager.IMPORTANCE_DEFAULT));
+            manager.createNotificationChannel(new NotificationChannel(CHANNEL_AI, "AI Insights", NotificationManager.IMPORTANCE_DEFAULT));
         }
     }
 }

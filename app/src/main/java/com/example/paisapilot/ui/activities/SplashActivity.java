@@ -87,6 +87,8 @@ public class SplashActivity extends AppCompatActivity {
 
         new LifecycleManager(this).checkAndRunRollover();
 
+        com.example.paisapilot.data.local.NotificationScheduler.scheduleAll(this);
+
         scheduleBackgroundTasks();
     }
 

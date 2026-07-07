@@ -90,6 +90,16 @@
             android:exported="false"
             android:theme="@style/Theme.PaisaPilot" />
 
+        <activity
+            android:name=".ui.activities.NotificationSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PaisaPilot" />
+
+        <activity
+            android:name=".ui.activities.NotificationTestActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PaisaPilot" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

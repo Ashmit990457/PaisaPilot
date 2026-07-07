@@ -110,13 +110,20 @@ public class MainActivity extends BaseActivity {
 
         binding.ivProfile.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
-                    .setTitle("Logout")
-                    .setMessage("Are you sure you want to logout?")
-                    .setPositiveButton("Logout", (dialog, which) -> {
-                        logout();
+                    .setTitle("Profile Options")
+                    .setItems(new String[]{"Notification Settings", "Logout"}, (dialog, which) -> {
+                        if (which == 0) {
+                            startActivity(new Intent(this, NotificationSettingsActivity.class));
+                        } else {
+                            logout();
+                        }
                     })
-                    .setNegativeButton("Cancel", null)
                     .show();
+        });
+
+        binding.ivProfile.setOnLongClickListener(v -> {
+            startActivity(new Intent(this, NotificationTestActivity.class));
+            return true;
         });
 
         loadData();

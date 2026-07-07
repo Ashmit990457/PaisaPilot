@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/splash_bg">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarNotifTest"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/white"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="Developer Notification Test"
+        app:titleCentered="true" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbarNotifTest">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestBudget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Budget Alert" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestGoal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Test Goal Alert" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestDaily"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Test Daily Summary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestWeekly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Test Weekly Summary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestRecurring"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Test Recurring Reminder" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestAI"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Test AI Insight" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Test Expense Reminder" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
