@@ -45,6 +45,14 @@ public class SavingsRepository {
         return Transformations.map(goalDao.getGoalsByUser(userId), Mapper::toGoalModelList);
     }
 
+    public LiveData<List<SavingsGoal>> searchGoals(String query) {
+        String userId = sessionManager.getUserId();
+        if (query == null || query.trim().isEmpty()) {
+            return getAllGoals();
+        }
+        return Transformations.map(goalDao.searchGoals(userId, query), Mapper::toGoalModelList);
+    }
+
     public void addGoal(@NonNull SavingsGoal goal, @NonNull SavingsCallback<Boolean> callback) {
         String userId = sessionManager.getUserId();
         if (userId == null) {

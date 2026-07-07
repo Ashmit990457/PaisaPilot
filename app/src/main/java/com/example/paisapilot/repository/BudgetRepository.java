@@ -45,6 +45,14 @@ public class BudgetRepository {
         return Transformations.map(budgetDao.getBudgetsByUser(userId), Mapper::toBudgetModelList);
     }
 
+    public LiveData<List<Budget>> searchBudgets(String query) {
+        String userId = sessionManager.getUserId();
+        if (query == null || query.trim().isEmpty()) {
+            return getAllBudgets();
+        }
+        return Transformations.map(budgetDao.searchBudgets(userId, query), Mapper::toBudgetModelList);
+    }
+
     public void createBudget(@NonNull Budget budget, @NonNull BudgetCallback<Boolean> callback) {
         String userId = sessionManager.getUserId();
         if (userId == null) {

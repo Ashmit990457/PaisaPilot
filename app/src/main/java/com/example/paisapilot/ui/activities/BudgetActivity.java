@@ -2,6 +2,8 @@ package com.example.paisapilot.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.Toast;
@@ -52,6 +54,7 @@ public class BudgetActivity extends BaseActivity {
 
         viewModel = new ViewModelProvider(this).get(BudgetViewModel.class);
         setupRecyclerView();
+        setupSearch();
         observeViewModel();
 
         binding.fabAddBudget.setOnClickListener(v -> 
@@ -83,9 +86,24 @@ public class BudgetActivity extends BaseActivity {
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
                 Budget budget = adapter.getBudgets().get(position);
-                deleteBudgetWithUndo(budget, position);
+                deleteBudgetWithUndo(budget);
             }
         }).attachToRecyclerView(binding.rvBudgets);
+    }
+
+    private void setupSearch() {
+        binding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                viewModel.setSearchQuery(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void showBudgetPopupMenu(Budget budget) {
@@ -120,18 +138,16 @@ public class BudgetActivity extends BaseActivity {
                 .setTitle("Delete Budget")
                 .setMessage("Are you sure you want to delete the budget for " + budget.getCategory() + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    viewModel.deleteBudget(budget.getBudgetId());
+                    deleteBudgetWithUndo(budget);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void deleteBudgetWithUndo(Budget budget, int position) {
+    private void deleteBudgetWithUndo(Budget budget) {
         viewModel.deleteBudget(budget.getBudgetId());
-        Snackbar.make(binding.rvBudgets, "Budget deleted", Snackbar.LENGTH_LONG)
-                .setAction("Undo", v -> {
-                    viewModel.undoDelete(budget.getBudgetId());
-                })
+        Snackbar.make(binding.budgetRoot, "Budget deleted", Snackbar.LENGTH_LONG)
+                .setAction("Undo", v -> viewModel.undoDelete(budget.getBudgetId()))
                 .show();
     }
 
@@ -144,26 +160,17 @@ public class BudgetActivity extends BaseActivity {
                     break;
                 case SUCCESS:
                     binding.progressBudget.setVisibility(View.GONE);
-                    if (resource.getData() != null && !resource.getData().isEmpty()) {
+                    if (resource.getData() != null) {
                         adapter.setBudgets(resource.getData());
-                        binding.rvBudgets.setVisibility(View.VISIBLE);
-                        binding.emptyStateBudget.setVisibility(View.GONE);
-                    } else {
-                        binding.rvBudgets.setVisibility(View.GONE);
-                        binding.emptyStateBudget.setVisibility(View.VISIBLE);
+                        boolean isEmpty = resource.getData().isEmpty();
+                        binding.rvBudgets.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                        binding.emptyStateBudget.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
                     }
                     break;
                 case ERROR:
                     binding.progressBudget.setVisibility(View.GONE);
                     Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
                     break;
-            }
-        });
-
-        viewModel.getDeleteBudgetState().observe(this, resource -> {
-            if (resource == null) return;
-            if (resource.getStatus() == com.example.paisapilot.model.Resource.Status.ERROR) {
-                Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

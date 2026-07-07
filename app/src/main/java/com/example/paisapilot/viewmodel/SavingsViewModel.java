@@ -22,14 +22,13 @@ public class SavingsViewModel extends AndroidViewModel {
     private final SavingsRepository repository;
     private final MediatorLiveData<Resource<List<SavingsGoal>>> goalsState = new MediatorLiveData<>();
     private final MutableLiveData<Resource<Boolean>> goalActionState = new MutableLiveData<>();
+    private final MutableLiveData<String> searchQuery = new MutableLiveData<>("");
+    private LiveData<List<SavingsGoal>> currentSource;
 
     public SavingsViewModel(@NonNull Application application) {
         super(application);
         this.repository = new SavingsRepository(application);
-        
-        goalsState.addSource(repository.getAllGoals(), goals -> {
-            goalsState.setValue(Resource.success(goals));
-        });
+        refreshSource();
     }
 
     public LiveData<Resource<List<SavingsGoal>>> getGoalsState() {
@@ -38,6 +37,21 @@ public class SavingsViewModel extends AndroidViewModel {
 
     public LiveData<Resource<Boolean>> getGoalActionState() {
         return goalActionState;
+    }
+
+    public void setSearchQuery(String query) {
+        searchQuery.setValue(query);
+        refreshSource();
+    }
+
+    private void refreshSource() {
+        if (currentSource != null) {
+            goalsState.removeSource(currentSource);
+        }
+        currentSource = repository.searchGoals(searchQuery.getValue());
+        goalsState.addSource(currentSource, goals -> {
+            goalsState.setValue(Resource.success(goals));
+        });
     }
 
     public ValidationResult validateGoalInput(String title, String targetAmount, String savedAmount, Timestamp targetDate) {
@@ -100,6 +114,7 @@ public class SavingsViewModel extends AndroidViewModel {
     }
 
     public void loadGoals() {
+        refreshSource();
     }
 
     public void addSavings(String goalId, String amountStr) {

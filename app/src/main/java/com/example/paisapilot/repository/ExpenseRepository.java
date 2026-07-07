@@ -6,6 +6,9 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 
+import androidx.sqlite.db.SimpleSQLiteQuery;
+import androidx.sqlite.db.SupportSQLiteQuery;
+
 import com.example.paisapilot.data.local.AppDatabase;
 import com.example.paisapilot.data.local.SyncStatus;
 import com.example.paisapilot.data.local.dao.ExpenseDao;
@@ -15,6 +18,7 @@ import com.example.paisapilot.model.Expense;
 import com.example.paisapilot.utils.Mapper;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,9 +44,65 @@ public class ExpenseRepository {
         void onError(@NonNull String message);
     }
 
-    public LiveData<List<Expense>> getAllExpenses() {
+    public LiveData<List<Expense>> getFilteredExpenses(String query, String dateFilter, List<String> payments, String sortBy) {
         String userId = sessionManager.getUserId();
-        return Transformations.map(expenseDao.getExpensesByUser(userId), Mapper::toModelList);
+        StringBuilder sql = new StringBuilder("SELECT * FROM expenses WHERE userId = '").append(userId).append("' AND syncStatus != 'PENDING_DELETE'");
+
+        if (query != null && !query.isEmpty()) {
+            sql.append(" AND (title LIKE '%").append(query).append("%' OR category LIKE '%").append(query).append("%' OR note LIKE '%").append(query).append("%')");
+        }
+
+        if (dateFilter != null) {
+            long now = System.currentTimeMillis();
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            
+            switch (dateFilter) {
+                case "Today":
+                    sql.append(" AND date >= ").append(cal.getTimeInMillis());
+                    break;
+                case "Yesterday":
+                    long end = cal.getTimeInMillis();
+                    cal.add(Calendar.DAY_OF_YEAR, -1);
+                    sql.append(" AND date >= ").append(cal.getTimeInMillis()).append(" AND date < ").append(end);
+                    break;
+                case "Last 7 Days":
+                    cal.add(Calendar.DAY_OF_YEAR, -7);
+                    sql.append(" AND date >= ").append(cal.getTimeInMillis());
+                    break;
+                case "This Month":
+                    cal.set(Calendar.DAY_OF_MONTH, 1);
+                    sql.append(" AND date >= ").append(cal.getTimeInMillis());
+                    break;
+            }
+        }
+
+        if (payments != null && !payments.isEmpty()) {
+            sql.append(" AND paymentMethod IN (");
+            for (int i = 0; i < payments.size(); i++) {
+                sql.append("'").append(payments.get(i)).append("'");
+                if (i < payments.size() - 1) sql.append(",");
+            }
+            sql.append(")");
+        }
+
+        if (sortBy != null) {
+            switch (sortBy) {
+                case "Newest First": sql.append(" ORDER BY date DESC"); break;
+                case "Oldest First": sql.append(" ORDER BY date ASC"); break;
+                case "Highest Amount": sql.append(" ORDER BY amount DESC"); break;
+                case "Lowest Amount": sql.append(" ORDER BY amount ASC"); break;
+                case "A-Z": sql.append(" ORDER BY title ASC"); break;
+                case "Z-A": sql.append(" ORDER BY title DESC"); break;
+            }
+        } else {
+            sql.append(" ORDER BY date DESC");
+        }
+
+        return Transformations.map(expenseDao.getExpensesFiltered(new SimpleSQLiteQuery(sql.toString())), Mapper::toModelList);
     }
 
     public void addExpense(@NonNull Expense expense, @NonNull ExpenseCallback<Boolean> callback) {

@@ -22,6 +22,9 @@ public interface RecurringBillDao {
     @Query("SELECT * FROM recurring_bills WHERE nextDueDate <= :now")
     List<RecurringBillEntity> getDueRecurringBills(long now);
 
+    @Query("SELECT * FROM recurring_bills WHERE userId = :userId AND title LIKE '%' || :query || '%' AND syncStatus != 'PENDING_DELETE'")
+    LiveData<List<RecurringBillEntity>> searchBills(String userId, String query);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(RecurringBillEntity bill);
 

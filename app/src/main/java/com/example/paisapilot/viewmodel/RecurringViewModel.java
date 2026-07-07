@@ -22,14 +22,13 @@ public class RecurringViewModel extends AndroidViewModel {
     private final RecurringRepository repository;
     private final MediatorLiveData<Resource<List<RecurringExpense>>> recurringListState = new MediatorLiveData<>();
     private final MutableLiveData<Resource<Boolean>> recurringActionState = new MutableLiveData<>();
+    private final MutableLiveData<String> searchQuery = new MutableLiveData<>("");
+    private LiveData<List<RecurringExpense>> currentSource;
 
     public RecurringViewModel(@NonNull Application application) {
         super(application);
         this.repository = new RecurringRepository(application);
-        
-        recurringListState.addSource(repository.getAllRecurring(), bills -> {
-            recurringListState.setValue(Resource.success(bills));
-        });
+        refreshSource();
     }
 
     public LiveData<Resource<List<RecurringExpense>>> getRecurringListState() {
@@ -38,6 +37,21 @@ public class RecurringViewModel extends AndroidViewModel {
 
     public LiveData<Resource<Boolean>> getRecurringActionState() {
         return recurringActionState;
+    }
+
+    public void setSearchQuery(String query) {
+        searchQuery.setValue(query);
+        refreshSource();
+    }
+
+    private void refreshSource() {
+        if (currentSource != null) {
+            recurringListState.removeSource(currentSource);
+        }
+        currentSource = repository.searchBills(searchQuery.getValue());
+        recurringListState.addSource(currentSource, bills -> {
+            recurringListState.setValue(Resource.success(bills));
+        });
     }
 
     public ValidationResult validateRecurringInput(String title, String amountStr, RecurringExpense.Frequency frequency, Timestamp nextDueDate) {
@@ -88,6 +102,7 @@ public class RecurringViewModel extends AndroidViewModel {
     }
 
     public void loadRecurringExpenses() {
+        refreshSource();
     }
 
     public void deleteRecurring(String id) {

@@ -5,10 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="20dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
-    app:strokeColor="@color/border_light"
-    app:strokeWidth="1dp">
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -16,36 +16,35 @@
         android:padding="16dp">
 
         <LinearLayout
-            android:id="@+id/ll_info_preview"
+            android:id="@+id/ll_bill_info"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/tvRecurringAmountPreview"
+            app:layout_constraintEnd_toStartOf="@+id/tv_bill_amount"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/tvRecurringTitlePreview"
+                android:id="@+id/tv_bill_title"
                 style="@style/TextAppearance.Material3.TitleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
                 android:textStyle="bold"
-                tools:text="Rent" />
+                tools:text="Netflix Subscription" />
 
             <TextView
-                android:id="@+id/tvRecurringDuePreview"
+                android:id="@+id/tv_bill_due"
                 style="@style/TextAppearance.Material3.LabelSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="@color/text_secondary"
-                tools:text="Due on 15 Oct" />
+                android:textColor="@color/text_muted"
+                tools:text="Due in 3 days (15 Oct)" />
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tvRecurringAmountPreview"
+            android:id="@+id/tv_bill_amount"
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -54,7 +53,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="₹15,000" />
+            tools:text="₹499.00" />
+
+        <View
+            android:id="@+id/v_overdue_indicator"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="#E11D48"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

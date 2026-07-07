@@ -1,6 +1,7 @@
 package com.example.paisapilot.ui.adapters;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -20,9 +21,8 @@ public class SavingsPreviewAdapter extends RecyclerView.Adapter<SavingsPreviewAd
     public void setGoals(List<SavingsGoal> newGoals) {
         goals.clear();
         if (newGoals != null) {
-            // Show top 3
-            int limit = Math.min(newGoals.size(), 3);
-            goals.addAll(newGoals.subList(0, limit));
+            // Only show incomplete or recently completed
+            goals.addAll(newGoals);
         }
         notifyDataSetChanged();
     }
@@ -45,10 +45,10 @@ public class SavingsPreviewAdapter extends RecyclerView.Adapter<SavingsPreviewAd
 
     @Override
     public int getItemCount() {
-        return goals.size();
+        return Math.min(goals.size(), 3); // Max 3 in dashboard
     }
 
-    static class SavingsPreviewViewHolder extends RecyclerView.ViewHolder {
+    class SavingsPreviewViewHolder extends RecyclerView.ViewHolder {
         private final ItemGoalPreviewBinding binding;
 
         public SavingsPreviewViewHolder(@NonNull ItemGoalPreviewBinding binding) {
@@ -57,10 +57,12 @@ public class SavingsPreviewAdapter extends RecyclerView.Adapter<SavingsPreviewAd
         }
 
         public void bind(SavingsGoal goal) {
-            binding.tvGoalTitlePreview.setText(goal.getTitle());
-            binding.tvGoalPercentagePreview.setText(String.format(Locale.getDefault(), "%d%%", goal.getPercentage()));
-            binding.progressGoalPreview.setProgress(goal.getPercentage());
-            binding.tvRemainingPreview.setText(String.format(Locale.getDefault(), "₹%.2f remaining", goal.getRemainingAmount()));
+            binding.tvGoalTitle.setText(goal.getTitle());
+            binding.tvGoalPercent.setText(String.format(Locale.getDefault(), "%d%%", goal.getPercentage()));
+            binding.progressGoal.setProgress(goal.getPercentage());
+            binding.tvGoalInfo.setText(String.format(Locale.getDefault(), "₹%.0f of ₹%.0f", goal.getSavedAmount(), goal.getTargetAmount()));
+            
+            binding.tvCompletedTag.setVisibility(goal.isCompleted() ? View.VISIBLE : View.GONE);
         }
     }
 }

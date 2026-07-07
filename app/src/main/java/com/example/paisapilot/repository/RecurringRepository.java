@@ -13,6 +13,7 @@ import com.example.paisapilot.data.remote.SyncManager;
 import com.example.paisapilot.data.session.SessionManager;
 import com.example.paisapilot.model.RecurringExpense;
 import com.example.paisapilot.utils.Mapper;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
@@ -41,6 +42,14 @@ public class RecurringRepository {
     public LiveData<List<RecurringExpense>> getAllRecurring() {
         String userId = sessionManager.getUserId();
         return Transformations.map(recurringBillDao.getRecurringBillsByUser(userId), Mapper::toRecurringModelList);
+    }
+
+    public LiveData<List<RecurringExpense>> searchBills(String query) {
+        String userId = sessionManager.getUserId();
+        if (query == null || query.trim().isEmpty()) {
+            return getAllRecurring();
+        }
+        return Transformations.map(recurringBillDao.searchBills(userId, query), Mapper::toRecurringModelList);
     }
 
     public void createRecurring(@NonNull RecurringExpense recurring, @NonNull RecurringCallback<Boolean> callback) {
@@ -86,9 +95,6 @@ public class RecurringRepository {
 
     public void markPaid(@NonNull RecurringExpense item, @NonNull RecurringCallback<Boolean> callback) {
         executor.execute(() -> {
-            // Logic to calculate next date and update
-            // Also adds a transaction (expense)
-            // For now, simple update
             item.setNextDueDate(calculateNextDate(item.getNextDueDate()));
             recurringBillDao.update(Mapper.toEntity(item, SyncStatus.PENDING_UPDATE));
             syncManager.triggerSync();
@@ -97,7 +103,6 @@ public class RecurringRepository {
     }
 
     private com.google.firebase.Timestamp calculateNextDate(com.google.firebase.Timestamp current) {
-        // Simple logic for monthly for now
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.setTime(current.toDate());
         cal.add(java.util.Calendar.MONTH, 1);

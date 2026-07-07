@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.paisapilot.databinding.ItemBudgetBinding;
 import com.example.paisapilot.model.Budget;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +63,11 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
         return budgets.size();
     }
 
+    private String formatCurrency(double amount) {
+        NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+        return format.format(amount);
+    }
+
     class BudgetViewHolder extends RecyclerView.ViewHolder {
         private final ItemBudgetBinding binding;
 
@@ -72,23 +78,24 @@ public class BudgetAdapter extends RecyclerView.Adapter<BudgetAdapter.BudgetView
 
         public void bind(Budget budget) {
             binding.tvBudgetCategory.setText(budget.getCategory());
-            binding.tvBudgetLimit.setText(String.format(Locale.getDefault(), "₹%.0f Budget", budget.getMonthlyLimit()));
-            binding.tvBudgetSpent.setText(String.format(Locale.getDefault(), "₹%.0f", budget.getSpentAmount()));
-            binding.tvBudgetRemaining.setText(String.format(Locale.getDefault(), "₹%.0f", budget.getRemainingAmount()));
+            binding.tvBudgetLimit.setText(String.format(Locale.getDefault(), "Limit: %s", formatCurrency(budget.getMonthlyLimit())));
+            binding.tvBudgetSpent.setText(formatCurrency(budget.getSpentAmount()));
+            binding.tvBudgetRemaining.setText(formatCurrency(budget.getRemainingAmount()));
 
             int progress = (int) ((budget.getSpentAmount() / budget.getMonthlyLimit()) * 100);
-            binding.progressBudgetUsage.setProgress(Math.min(progress, 100));
+            binding.progressBudgetUsage.setProgress(Math.min(progress, 100), true);
 
             // Coloring logic
             int color;
             if (progress < 70) {
-                color = Color.GREEN;
+                color = Color.parseColor("#22C55E"); // accent_green
             } else if (progress <= 90) {
-                color = Color.YELLOW;
+                color = Color.parseColor("#F59E0B"); // amber
             } else {
-                color = Color.RED;
+                color = Color.parseColor("#EF4444"); // red
             }
             binding.progressBudgetUsage.setIndicatorColor(color);
+            binding.tvBudgetRemaining.setTextColor(color);
 
             if (budget.getSpentAmount() > budget.getMonthlyLimit()) {
                 binding.tvBudgetWarning.setVisibility(View.VISIBLE);

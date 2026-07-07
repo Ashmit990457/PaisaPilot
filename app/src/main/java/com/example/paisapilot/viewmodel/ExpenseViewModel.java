@@ -22,14 +22,47 @@ public class ExpenseViewModel extends AndroidViewModel {
     private final ExpenseRepository repository;
     private final MediatorLiveData<Resource<List<Expense>>> expensesState = new MediatorLiveData<>();
     private final MutableLiveData<Resource<Boolean>> expenseActionState = new MutableLiveData<>();
+    private final MutableLiveData<String> searchQuery = new MutableLiveData<>("");
+    private final MutableLiveData<String> dateFilter = new MutableLiveData<>(null);
+    private final MutableLiveData<List<String>> paymentFilters = new MutableLiveData<>(new java.util.ArrayList<>());
+    private final MutableLiveData<String> sortBy = new MutableLiveData<>("Newest First");
+
+    private LiveData<List<Expense>> currentSource;
 
     public ExpenseViewModel(@NonNull Application application) {
         super(application);
         this.repository = new ExpenseRepository(application);
-        
-        expensesState.addSource(repository.getAllExpenses(), expenses -> {
+        refreshSource();
+    }
+
+    public void setSearchQuery(String query) {
+        searchQuery.setValue(query);
+        refreshSource();
+    }
+
+    public void setFilters(String date, List<String> payments, String sort) {
+        dateFilter.setValue(date);
+        paymentFilters.setValue(payments);
+        sortBy.setValue(sort);
+        refreshSource();
+    }
+
+    private void refreshSource() {
+        if (currentSource != null) {
+            expensesState.removeSource(currentSource);
+        }
+        currentSource = repository.getFilteredExpenses(searchQuery.getValue(), dateFilter.getValue(), paymentFilters.getValue(), sortBy.getValue());
+        expensesState.addSource(currentSource, expenses -> {
             expensesState.setValue(Resource.success(expenses));
         });
+    }
+
+    public void clearFilters() {
+        searchQuery.setValue("");
+        dateFilter.setValue(null);
+        paymentFilters.setValue(new java.util.ArrayList<>());
+        sortBy.setValue("Newest First");
+        refreshSource();
     }
 
     public LiveData<Resource<List<Expense>>> getExpensesState() {

@@ -2,8 +2,9 @@ package com.example.paisapilot.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -52,6 +53,7 @@ public class RecurringExpensesActivity extends BaseActivity {
 
         viewModel = new ViewModelProvider(this).get(RecurringViewModel.class);
         setupRecyclerView();
+        setupSearch();
         observeViewModel();
 
         binding.fabAddRecurring.setOnClickListener(v -> 
@@ -98,9 +100,24 @@ public class RecurringExpensesActivity extends BaseActivity {
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
                 RecurringExpense item = adapter.getList().get(position);
-                deleteRecurringWithUndo(item, position);
+                deleteRecurringWithUndo(item);
             }
         }).attachToRecyclerView(binding.rvRecurring);
+    }
+
+    private void setupSearch() {
+        binding.searchView.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                viewModel.setSearchQuery(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void editRecurring(RecurringExpense item) {
@@ -122,18 +139,16 @@ public class RecurringExpensesActivity extends BaseActivity {
                 .setTitle("Delete Recurring Bill")
                 .setMessage("Are you sure you want to delete " + item.getTitle() + "?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    viewModel.deleteRecurring(item.getId());
+                    deleteRecurringWithUndo(item);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private void deleteRecurringWithUndo(RecurringExpense item, int position) {
+    private void deleteRecurringWithUndo(RecurringExpense item) {
         viewModel.deleteRecurring(item.getId());
-        Snackbar.make(binding.rvRecurring, "Recurring bill deleted", Snackbar.LENGTH_LONG)
-                .setAction("Undo", v -> {
-                    viewModel.undoDelete(item.getId());
-                })
+        Snackbar.make(binding.recurringRoot, "Recurring bill deleted", Snackbar.LENGTH_LONG)
+                .setAction("Undo", v -> viewModel.undoDelete(item.getId()))
                 .show();
     }
 
@@ -146,26 +161,17 @@ public class RecurringExpensesActivity extends BaseActivity {
                     break;
                 case SUCCESS:
                     binding.progressRecurring.setVisibility(View.GONE);
-                    if (resource.getData() != null && !resource.getData().isEmpty()) {
+                    if (resource.getData() != null) {
                         adapter.setList(resource.getData());
-                        binding.rvRecurring.setVisibility(View.VISIBLE);
-                        binding.emptyStateRecurring.setVisibility(View.GONE);
-                    } else {
-                        binding.rvRecurring.setVisibility(View.GONE);
-                        binding.emptyStateRecurring.setVisibility(View.VISIBLE);
+                        boolean isEmpty = resource.getData().isEmpty();
+                        binding.rvRecurring.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                        binding.emptyStateRecurring.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
                     }
                     break;
                 case ERROR:
                     binding.progressRecurring.setVisibility(View.GONE);
                     Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
                     break;
-            }
-        });
-
-        viewModel.getRecurringActionState().observe(this, resource -> {
-            if (resource == null) return;
-            if (resource.getStatus() == com.example.paisapilot.model.Resource.Status.ERROR) {
-                Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

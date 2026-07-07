@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.activity.ktx)
     implementation(libs.appcompat)
     implementation(libs.constraintlayout)
+    implementation(libs.swiperefreshlayout)
     implementation(libs.material)
     implementation(libs.mpandroidchart)
     implementation(libs.work.runtime)

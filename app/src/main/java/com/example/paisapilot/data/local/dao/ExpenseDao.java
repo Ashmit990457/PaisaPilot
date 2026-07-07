@@ -5,7 +5,9 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.RawQuery;
 import androidx.room.Update;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 import com.example.paisapilot.data.local.SyncStatus;
 import com.example.paisapilot.data.local.entity.ExpenseEntity;
@@ -24,6 +26,9 @@ public interface ExpenseDao {
 
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date >= :startDate AND syncStatus != 'PENDING_DELETE' ORDER BY date DESC")
     List<ExpenseEntity> getExpensesByUserAfterSync(String userId, long startDate);
+
+    @RawQuery(observedEntities = ExpenseEntity.class)
+    LiveData<List<ExpenseEntity>> getExpensesFiltered(SupportSQLiteQuery query);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(ExpenseEntity expense);

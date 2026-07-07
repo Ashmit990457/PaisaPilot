@@ -22,6 +22,9 @@ public interface GoalDao {
     @Query("SELECT * FROM goals WHERE goalId = :goalId LIMIT 1")
     GoalEntity getGoalById(String goalId);
 
+    @Query("SELECT * FROM goals WHERE userId = :userId AND title LIKE '%' || :query || '%' AND syncStatus != 'PENDING_DELETE'")
+    LiveData<List<GoalEntity>> searchGoals(String userId, String query);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(GoalEntity goal);
 

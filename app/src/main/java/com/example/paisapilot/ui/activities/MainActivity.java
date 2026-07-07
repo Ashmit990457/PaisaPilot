@@ -46,7 +46,11 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -85,6 +89,7 @@ public class MainActivity extends BaseActivity {
         
         setupRecyclerViews();
         observeViewModels();
+        setupRefreshLayout();
 
         binding.fabAddExpense.setOnClickListener(v -> showAddOptions());
 
@@ -111,8 +116,10 @@ public class MainActivity extends BaseActivity {
         binding.ivProfile.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Profile Options")
-                    .setItems(new String[]{"Notification Settings", "Logout"}, (dialog, which) -> {
+                    .setItems(new String[]{"Settings", "Notification Settings", "Logout"}, (dialog, which) -> {
                         if (which == 0) {
+                            startActivity(new Intent(this, SettingsActivity.class));
+                        } else if (which == 1) {
                             startActivity(new Intent(this, NotificationSettingsActivity.class));
                         } else {
                             logout();
@@ -126,7 +133,29 @@ public class MainActivity extends BaseActivity {
             return true;
         });
 
+        binding.btnEmptyAdd.setOnClickListener(v -> showAddOptions());
+
         loadData();
+    }
+
+    private void updateGreeting(String name) {
+        Calendar cal = Calendar.getInstance();
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        String greeting;
+        if (hour < 12) greeting = "Good Morning, ";
+        else if (hour < 17) greeting = "Good Afternoon, ";
+        else greeting = "Good Evening, ";
+        
+        String firstName = (name != null && name.contains(" ")) ? name.split(" ")[0] : name;
+        binding.tvGreeting.setText(greeting + firstName + " 👋");
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault());
+        binding.tvDate.setText(sdf.format(new Date()));
+    }
+
+    private String formatCurrency(double amount) {
+        NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+        return format.format(amount);
     }
 
     private void logout() {
@@ -163,6 +192,21 @@ public class MainActivity extends BaseActivity {
         insightViewModel.loadInsights();
         savingsViewModel.loadGoals();
         recurringViewModel.loadRecurringExpenses();
+    }
+
+    private void setupRefreshLayout() {
+        binding.swipeRefreshLayout.setColorSchemeColors(Color.parseColor("#6750A4"));
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> {
+            loadData();
+            new com.example.paisapilot.data.remote.SyncManager(this).triggerSync();
+            
+            // Auto-stop refresh after 2 seconds to avoid infinite spinning
+            binding.swipeRefreshLayout.postDelayed(() -> {
+                if (binding.swipeRefreshLayout.isRefreshing()) {
+                    binding.swipeRefreshLayout.setRefreshing(false);
+                }
+            }, 2000);
+        });
     }
 
     private void setupRecyclerViews() {
@@ -223,11 +267,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void observeViewModels() {
-        dashboardViewModel.getUserNameState().observe(this, name -> {
-            if (name != null) {
-                binding.tvUsername.setText(name);
-            }
-        });
+        dashboardViewModel.getUserNameState().observe(this, this::updateGreeting);
 
         dashboardViewModel.getDashboardState().observe(this, resource -> {
             if (resource == null) return;
@@ -243,6 +283,7 @@ public class MainActivity extends BaseActivity {
                     break;
                 case ERROR:
                     binding.progressMain.setVisibility(View.GONE);
+                    binding.swipeRefreshLayout.setRefreshing(false);
                     Toast.makeText(this, resource.getMessage(), Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -250,18 +291,18 @@ public class MainActivity extends BaseActivity {
 
         expenseViewModel.getExpensesState().observe(this, resource -> {
             if (resource == null) return;
-            switch (resource.getStatus()) {
-                case SUCCESS:
-                    if (resource.getData() != null && !resource.getData().isEmpty()) {
-                        int limit = Math.min(resource.getData().size(), 5);
-                        expenseAdapter.setExpenses(resource.getData().subList(0, limit));
-                        binding.rvExpenses.setVisibility(View.VISIBLE);
-                        binding.emptyState.setVisibility(View.GONE);
-                    } else {
-                        binding.rvExpenses.setVisibility(View.GONE);
-                        binding.emptyState.setVisibility(View.VISIBLE);
-                    }
-                    break;
+            if (resource.getStatus() == com.example.paisapilot.model.Resource.Status.SUCCESS) {
+                if (resource.getData() != null && !resource.getData().isEmpty()) {
+                    int limit = Math.min(resource.getData().size(), 5);
+                    expenseAdapter.setExpenses(resource.getData().subList(0, limit));
+                    binding.rvExpenses.setVisibility(View.VISIBLE);
+                    binding.llRecentExpenses.setVisibility(View.VISIBLE);
+                    binding.emptyState.setVisibility(View.GONE);
+                } else {
+                    binding.rvExpenses.setVisibility(View.GONE);
+                    binding.llRecentExpenses.setVisibility(View.GONE);
+                    binding.emptyState.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -294,11 +335,15 @@ public class MainActivity extends BaseActivity {
     }
 
     private void updateDashboardUI(DashboardData data) {
-        updateCard(binding.cardTotalExpense, "Total Expenses", String.format(Locale.getDefault(), "₹%.2f", data.getTotalExpense()));
-        updateCard(binding.cardTotalBudget, "Total Budget", String.format(Locale.getDefault(), "₹%.2f", data.getTotalBudget()));
-        updateCard(binding.cardRemainingBudget, "Remaining Budget", String.format(Locale.getDefault(), "₹%.2f", data.getRemainingBudget()));
-        updateCard(binding.cardExpenseCount, "Expenses Count", String.valueOf(data.getExpenseCount()));
-        updateCard(binding.cardHighestCategory, "Highest Category", data.getHighestCategory());
+        updateCard(binding.cardTotalExpense, "Expenses", formatCurrency(data.getTotalExpense()), android.R.drawable.ic_menu_agenda);
+        updateCard(binding.cardTotalIncome, "Income", formatCurrency(data.getTotalBudget()), android.R.drawable.ic_menu_save);
+        updateCard(binding.cardBalance, "Balance", formatCurrency(data.getRemainingBudget()), android.R.drawable.ic_menu_today);
+        updateCard(binding.cardExpenseCount, "Transactions", String.valueOf(data.getExpenseCount()), android.R.drawable.ic_menu_edit);
+
+        updateTopCategoryCard(data);
+
+        String month = new SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(new Date());
+        binding.tvCurrentMonth.setText(month);
 
         if (data.getForecast() != null) {
             updateForecastUI(data.getForecast());
@@ -306,19 +351,64 @@ public class MainActivity extends BaseActivity {
 
         setupPieChart(data.getCategoryWiseExpenses());
         setupBarChart(data.getWeeklyExpenses());
+        
+        binding.swipeRefreshLayout.setRefreshing(false);
+        animateDashboard();
     }
 
-    private void updateCard(LayoutDashboardCardBinding cardBinding, String label, String value) {
+    private void updateTopCategoryCard(DashboardData data) {
+        String highestCat = data.getHighestCategory();
+        if (highestCat == null || highestCat.equals("None") || data.getTotalExpense() <= 0) {
+            binding.cardTopCategory.getRoot().setVisibility(View.GONE);
+            return;
+        }
+
+        binding.cardTopCategory.getRoot().setVisibility(View.VISIBLE);
+        binding.cardTopCategory.tvCatName.setText(highestCat);
+        
+        Double amount = data.getCategoryWiseExpenses().get(highestCat);
+        if (amount != null) {
+            binding.cardTopCategory.tvCatAmount.setText(formatCurrency(amount));
+            double percent = (amount / data.getTotalExpense()) * 100;
+            binding.cardTopCategory.tvCatPercent.setText(String.format(Locale.getDefault(), "%.0f%% of total spending", percent));
+        }
+    }
+
+    private void updateCard(LayoutDashboardCardBinding cardBinding, String label, String value, int iconRes) {
         cardBinding.tvCardLabel.setText(label);
         cardBinding.tvCardValue.setText(value);
+        cardBinding.ivCardIcon.setImageResource(iconRes);
+        
+        // Dynamic coloring for Balance
+        if (label.equals("Balance")) {
+            try {
+                String cleanVal = value.replaceAll("[^\\d.-]", "");
+                double val = Double.parseDouble(cleanVal);
+                if (val < 0) {
+                    cardBinding.tvCardValue.setTextColor(Color.parseColor("#EF4444"));
+                } else {
+                    cardBinding.tvCardValue.setTextColor(Color.parseColor("#22C55E"));
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    private void animateDashboard() {
+        binding.gridSummary.setAlpha(0f);
+        binding.gridSummary.setTranslationY(50f);
+        binding.gridSummary.animate().alpha(1f).translationY(0f).setDuration(500).start();
+        
+        binding.cardTopCategory.getRoot().setAlpha(0f);
+        binding.cardTopCategory.getRoot().setTranslationY(50f);
+        binding.cardTopCategory.getRoot().animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(100).start();
     }
 
     private void updateForecastUI(Forecast forecast) {
         LayoutForecastCardBinding forecastBinding = LayoutForecastCardBinding.bind(binding.layoutForecast.getRoot());
         
-        forecastBinding.tvAverageDailySpend.setText(String.format(Locale.getDefault(), "₹%.2f", forecast.getAverageDailySpending()));
-        forecastBinding.tvProjectedExpense.setText(String.format(Locale.getDefault(), "₹%.0f", forecast.getProjectedExpense()));
-        forecastBinding.tvProjectedSavings.setText(String.format(Locale.getDefault(), "₹%.0f", forecast.getForecastedSavings()));
+        forecastBinding.tvAverageDailySpend.setText(formatCurrency(forecast.getAverageDailySpending()));
+        forecastBinding.tvProjectedExpense.setText(formatCurrency(forecast.getProjectedExpense()));
+        forecastBinding.tvProjectedSavings.setText(formatCurrency(forecast.getForecastedSavings()));
         forecastBinding.tvForecastRecommendation.setText(forecast.getForecastMessage());
 
         String status = forecast.getRiskLevel().name();
@@ -352,7 +442,7 @@ public class MainActivity extends BaseActivity {
             entries.add(new PieEntry(entry.getValue().floatValue(), entry.getKey()));
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Categories");
+        PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
         dataSet.setValueTextColor(Color.BLACK);
         dataSet.setValueTextSize(12f);
@@ -362,6 +452,7 @@ public class MainActivity extends BaseActivity {
         pieChart.getDescription().setEnabled(false);
         pieChart.setCenterText("Expenses");
         pieChart.animateY(1000);
+        pieChart.getLegend().setEnabled(false);
         pieChart.invalidate();
     }
 
@@ -382,6 +473,8 @@ public class MainActivity extends BaseActivity {
         barChart.setData(barData);
         barChart.getDescription().setEnabled(false);
         barChart.animateY(1000);
+        barChart.getXAxis().setGranularity(1f);
+        barChart.getLegend().setEnabled(false);
         barChart.invalidate();
     }
 

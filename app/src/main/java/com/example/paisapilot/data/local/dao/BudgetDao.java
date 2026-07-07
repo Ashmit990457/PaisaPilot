@@ -22,6 +22,9 @@ public interface BudgetDao {
     @Query("SELECT * FROM budgets WHERE userId = :userId AND category = :category LIMIT 1")
     BudgetEntity getBudgetByCategory(String userId, String category);
 
+    @Query("SELECT * FROM budgets WHERE userId = :userId AND category LIKE '%' || :query || '%' AND syncStatus != 'PENDING_DELETE'")
+    LiveData<List<BudgetEntity>> searchBudgets(String userId, String query);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(BudgetEntity budget);
 

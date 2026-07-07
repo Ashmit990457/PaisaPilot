@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.paisapilot.databinding.ItemExpenseBinding;
 import com.example.paisapilot.model.Expense;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,11 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
 
     public List<Expense> getExpenses() {
         return expenses;
+    }
+
+    private String formatCurrency(double amount) {
+        NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+        return format.format(amount);
     }
 
     @NonNull
@@ -76,7 +82,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ExpenseV
         public void bind(Expense expense) {
             binding.tvExpenseTitle.setText(expense.getTitle());
             binding.chipExpenseCategory.setText(expense.getCategory());
-            binding.tvExpenseAmount.setText(String.format(Locale.getDefault(), "-₹%.2f", expense.getAmount()));
+            binding.tvExpenseAmount.setText("- " + formatCurrency(expense.getAmount()));
             binding.tvPaymentMethod.setText(expense.getPaymentMethod());
             
             if (expense.getDate() != null) {

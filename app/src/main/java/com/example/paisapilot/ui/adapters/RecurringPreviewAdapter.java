@@ -1,6 +1,7 @@
 package com.example.paisapilot.ui.adapters;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import com.example.paisapilot.model.RecurringExpense;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,10 +23,7 @@ public class RecurringPreviewAdapter extends RecyclerView.Adapter<RecurringPrevi
 
     public void setList(List<RecurringExpense> newList) {
         list.clear();
-        if (newList != null) {
-            int limit = Math.min(newList.size(), 3);
-            list.addAll(newList.subList(0, limit));
-        }
+        if (newList != null) list.addAll(newList);
         notifyDataSetChanged();
     }
 
@@ -42,7 +41,7 @@ public class RecurringPreviewAdapter extends RecyclerView.Adapter<RecurringPrevi
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return Math.min(list.size(), 3);
     }
 
     class RecurringPreviewViewHolder extends RecyclerView.ViewHolder {
@@ -54,10 +53,26 @@ public class RecurringPreviewAdapter extends RecyclerView.Adapter<RecurringPrevi
         }
 
         public void bind(RecurringExpense item) {
-            binding.tvRecurringTitlePreview.setText(item.getTitle());
-            binding.tvRecurringAmountPreview.setText(String.format(Locale.getDefault(), "₹%.2f", item.getAmount()));
+            binding.tvBillTitle.setText(item.getTitle());
+            binding.tvBillAmount.setText(String.format(Locale.getDefault(), "₹%.2f", item.getAmount()));
+            
             if (item.getNextDueDate() != null) {
-                binding.tvRecurringDuePreview.setText(String.format(Locale.getDefault(), "Due on %s", dateFormat.format(item.getNextDueDate().toDate())));
+                long diff = item.getNextDueDate().toDate().getTime() - System.currentTimeMillis();
+                long days = diff / (24 * 60 * 60 * 1000);
+                
+                String dueText;
+                if (days == 0) dueText = "Due Today";
+                else if (days == 1) dueText = "Due Tomorrow";
+                else if (days < 0) dueText = "Overdue by " + Math.abs(days) + " days";
+                else dueText = "Due in " + days + " days (" + dateFormat.format(item.getNextDueDate().toDate()) + ")";
+                
+                binding.tvBillDue.setText(dueText);
+                binding.vOverdueIndicator.setVisibility(days < 0 ? View.VISIBLE : View.GONE);
+                if (days < 0) {
+                    binding.tvBillDue.setTextColor(android.graphics.Color.parseColor("#E11D48"));
+                } else {
+                    binding.tvBillDue.setTextColor(android.graphics.Color.parseColor("#64748B"));
+                }
             }
         }
     }
