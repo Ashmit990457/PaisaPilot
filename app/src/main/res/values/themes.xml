@@ -4,11 +4,20 @@
         <!-- Main colors -->
         <item name="colorPrimary">@color/primary_purple</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorPrimaryContainer">@color/gradient_start</item>
+        <item name="colorPrimaryContainer">@color/tonal_purple</item>
+        <item name="colorOnPrimaryContainer">@color/primary_purple</item>
+
         <item name="colorSecondary">@color/accent_green</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="android:windowBackground">@color/splash_bg</item>
-        <item name="android:statusBarColor">@color/splash_bg</item>
+
+        <item name="android:windowBackground">@color/light_bg</item>
+        <item name="colorSurface">@color/light_surface</item>
+        <item name="colorOnSurface">@color/light_text_primary</item>
+        <item name="colorSurfaceVariant">@color/tonal_purple</item>
+        <item name="colorOnSurfaceVariant">@color/light_text_secondary</item>
+        <item name="colorOutline">@color/light_border</item>
+
+        <item name="android:statusBarColor">?attr/colorSurface</item>
         <item name="android:windowLightStatusBar">true</item>
 
         <!-- Typography -->
@@ -22,12 +31,12 @@
 
     <!-- Custom Styles -->
     <style name="AppHeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="AppTitleMedium" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -41,7 +50,7 @@
 
     <style name="Theme.PaisaPilot" parent="Base.Theme.PaisaPilot" />
 
-    <!-- Splash Theme for Android 12+ support -->
+    <!-- Splash Theme -->
     <style name="Theme.PaisaPilot.Splash" parent="Theme.PaisaPilot">
         <item name="android:windowBackground">@drawable/splash_background</item>
         <item name="android:windowNoTitle">true</item>
@@ -51,8 +60,7 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
 
-        <!-- Android 12+ System Splash Screen -->
-        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/splash_bg</item>
+        <item name="android:windowSplashScreenBackground" tools:targetApi="31">@color/light_bg</item>
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="31">@drawable/ic_paisapilot_logo</item>
     </style>
 </resources>

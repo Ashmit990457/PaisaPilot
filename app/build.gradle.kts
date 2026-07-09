@@ -18,7 +18,11 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: "YOUR_API_KEY"}\"")
+        }
         release {
+            buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: "YOUR_API_KEY"}\"")
             optimization {
                 enable = false
             }
@@ -30,6 +34,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 

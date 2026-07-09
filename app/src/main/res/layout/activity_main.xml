@@ -5,14 +5,14 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/splash_bg">
+    android:background="?android:attr/windowBackground">
 
     <!-- Top Header -->
     <LinearLayout
         android:id="@+id/ll_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/colorSurface"
         android:elevation="4dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -26,7 +26,7 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_paisapilot_logo"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-            app:strokeColor="@color/border_light"
+            app:strokeColor="?attr/colorOutline"
             app:strokeWidth="1dp" />
 
         <LinearLayout
@@ -41,7 +41,7 @@
                 style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="18sp"
                 tools:text="Good Morning, Ashmit 👋" />
 
@@ -51,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="@color/text_muted"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 tools:text="Wednesday, 16 July 2026" />
         </LinearLayout>
 
@@ -60,10 +60,9 @@
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
             app:icon="@android:drawable/ic_popup_reminder"
             app:iconSize="28dp"
-            app:iconTint="@color/text_primary" />
+            app:iconTint="?attr/colorOnSurface" />
 
     </LinearLayout>
 
@@ -101,7 +100,7 @@
                         style="@style/TextAppearance.Material3.TitleMedium"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/primary_purple"
+                        android:textColor="?attr/colorPrimary"
                         android:textStyle="bold"
                         tools:text="July 2026" />
 
@@ -111,7 +110,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="CURRENT MONTH"
-                        android:textColor="@color/text_muted" />
+                        android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
 
                 <TextView
@@ -122,6 +121,7 @@
                     android:layout_marginTop="24dp"
                     android:text="Financial Summary"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/ll_month_info" />
 
@@ -186,6 +186,7 @@
                     android:layout_marginTop="32dp"
                     android:text="Spending Analytics"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/card_top_category" />
 
@@ -211,7 +212,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Category Breakdown"
-                            android:textColor="@color/text_muted" />
+                            android:textColor="?attr/colorOnSurfaceVariant" />
 
                         <com.github.mikephil.charting.charts.PieChart
                             android:id="@+id/pie_chart"
@@ -243,7 +244,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Weekly Spending"
-                            android:textColor="@color/text_muted" />
+                            android:textColor="?attr/colorOnSurfaceVariant" />
 
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/bar_chart"
@@ -271,6 +272,7 @@
                     android:layout_marginTop="32dp"
                     android:text="AI Financial Insights"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/layout_forecast" />
 
@@ -306,6 +308,7 @@
                     android:layout_marginTop="32dp"
                     android:text="Management"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/btn_view_report" />
 
@@ -330,10 +333,10 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:background="@color/gradient_start"
+                            android:background="?attr/colorPrimaryContainer"
                             android:padding="8dp"
                             android:src="@android:drawable/ic_menu_agenda"
-                            app:tint="@color/primary_purple" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             style="@style/TextAppearance.Material3.TitleMedium"
@@ -342,13 +345,14 @@
                             android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:text="Manage Budgets"
+                            android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold" />
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@android:drawable/ic_media_play"
-                            app:tint="@color/text_muted" />
+                            app:tint="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -373,10 +377,10 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:background="@color/gradient_start"
+                            android:background="?attr/colorPrimaryContainer"
                             android:padding="8dp"
                             android:src="@android:drawable/ic_menu_save"
-                            app:tint="@color/primary_purple" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             style="@style/TextAppearance.Material3.TitleMedium"
@@ -385,13 +389,14 @@
                             android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:text="Savings Goals"
+                            android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold" />
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@android:drawable/ic_media_play"
-                            app:tint="@color/text_muted" />
+                            app:tint="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -426,10 +431,10 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:background="@color/gradient_start"
+                            android:background="?attr/colorPrimaryContainer"
                             android:padding="8dp"
                             android:src="@android:drawable/ic_lock_idle_alarm"
-                            app:tint="@color/primary_purple" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             style="@style/TextAppearance.Material3.TitleMedium"
@@ -438,13 +443,14 @@
                             android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:text="Recurring Bills"
+                            android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold" />
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@android:drawable/ic_media_play"
-                            app:tint="@color/text_muted" />
+                            app:tint="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -474,6 +480,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Recent Transactions"
+                        android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
@@ -482,7 +489,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="View All"
-                        android:textColor="@color/primary_purple" />
+                        android:textColor="?attr/colorPrimary" />
                 </LinearLayout>
 
                 <!-- Recent Expenses List -->
@@ -512,7 +519,7 @@
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:src="@android:drawable/ic_menu_agenda"
-                        app:tint="@color/text_muted" />
+                        app:tint="?attr/colorOnSurfaceVariant" />
 
                     <TextView
                         style="@style/TextAppearance.Material3.BodyMedium"
@@ -520,7 +527,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="No recent transactions"
-                        android:textColor="@color/text_muted" />
+                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_empty_add"
@@ -542,7 +549,7 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:visibility="gone"
-        app:indicatorColor="@color/primary_purple"
+        app:indicatorColor="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -553,11 +560,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        android:backgroundTint="@color/primary_purple"
+        android:backgroundTint="?attr/colorPrimary"
         android:contentDescription="Add expense"
         android:src="@android:drawable/ic_input_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/white" />
+        app:tint="?attr/colorOnPrimary" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

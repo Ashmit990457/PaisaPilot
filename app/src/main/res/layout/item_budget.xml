@@ -19,13 +19,13 @@
             android:id="@+id/iv_budget_icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@color/gradient_start"
+            android:background="?attr/colorSurfaceVariant"
             android:padding="12dp"
             android:src="@android:drawable/ic_menu_agenda"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-            app:tint="@color/primary_purple" />
+            app:tint="?attr/colorPrimary" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_budget_category"
@@ -33,7 +33,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:textColor="@color/text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/tv_budget_limit"
             app:layout_constraintStart_toEndOf="@id/iv_budget_icon"
@@ -45,7 +45,7 @@
             style="@style/TextAppearance.Material3.LabelSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_muted"
+            android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintBottom_toBottomOf="@id/tv_budget_category"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tv_budget_category"
@@ -62,7 +62,7 @@
             app:trackCornerRadius="4dp"
             app:trackThickness="12dp"
             app:indicatorColor="@color/accent_green"
-            app:trackColor="@color/border_light"
+            app:trackColor="?attr/colorOutline"
             tools:progress="65" />
 
         <LinearLayout
@@ -79,17 +79,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Spent"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textAllCaps="true" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_budget_spent"
                 style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="@color/text_primary"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="12sp"
+                app:autoSizeMaxTextSize="22sp"
                 tools:text="₹4,300" />
         </LinearLayout>
 
@@ -107,10 +110,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Remaining"
-                android:textColor="@color/text_secondary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textAllCaps="true" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_budget_remaining"
                 style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
@@ -118,6 +121,9 @@
                 android:layout_marginTop="2dp"
                 android:textColor="@color/accent_green"
                 android:textStyle="bold"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="12sp"
+                app:autoSizeMaxTextSize="22sp"
                 tools:text="₹7,700" />
         </LinearLayout>
 
@@ -128,7 +134,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Budget Exceeded!"
-            android:textColor="#E11D48"
+            android:textColor="@color/error_text"
             android:textStyle="bold"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"

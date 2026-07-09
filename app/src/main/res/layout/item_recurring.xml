@@ -8,7 +8,7 @@
     android:layout_marginVertical="8dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/border_light"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -21,20 +21,23 @@
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/tvRecurringAmount"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Netflix Subscription" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvRecurringAmount"
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary_purple"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="12sp"
+            app:autoSizeMaxTextSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="₹499.00" />
@@ -45,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="@color/text_muted"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textAllCaps="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvRecurringTitle"
@@ -57,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:textColor="@color/text_primary"
+            android:textColor="?attr/colorOnSurface"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvRecurringFrequency"
             tools:text="Next due on 15 Oct" />
@@ -113,7 +116,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Remove"
-            android:textColor="#E11D48"
+            android:textColor="@color/error_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

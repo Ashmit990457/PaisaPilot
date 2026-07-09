@@ -15,6 +15,7 @@ import com.example.paisapilot.databinding.ActivityReportsBinding;
 import com.example.paisapilot.databinding.LayoutDashboardCardBinding;
 import com.example.paisapilot.model.MonthlyReport;
 import com.example.paisapilot.model.Resource;
+import com.example.paisapilot.utils.ExportUtils;
 import com.example.paisapilot.viewmodel.ReportViewModel;
 
 import java.text.SimpleDateFormat;
@@ -26,6 +27,7 @@ public class ReportsActivity extends BaseActivity {
     private ActivityReportsBinding binding;
     private ReportViewModel viewModel;
     private Calendar selectedMonthCalendar;
+    private MonthlyReport currentReport;
     private final SimpleDateFormat monthYearFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
     private final SimpleDateFormat monthIdFormat = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
 
@@ -55,8 +57,21 @@ public class ReportsActivity extends BaseActivity {
         observeViewModel();
         loadReport();
         
-        binding.btnExportPDF.setOnClickListener(v -> shareReport("pdf"));
-        binding.btnExportCSV.setOnClickListener(v -> shareReport("csv"));
+        binding.btnExportPDF.setOnClickListener(v -> {
+            if (currentReport != null) {
+                ExportUtils.exportReportToPDF(this, currentReport);
+            } else {
+                Toast.makeText(this, "Report not loaded", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        binding.btnExportCSV.setOnClickListener(v -> {
+            if (currentReport != null) {
+                ExportUtils.exportReportToCSV(this, currentReport);
+            } else {
+                Toast.makeText(this, "Report not loaded", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupMonthNavigator() {
@@ -107,10 +122,12 @@ public class ReportsActivity extends BaseActivity {
                 case SUCCESS:
                     binding.progressReport.setVisibility(View.GONE);
                     if (resource.getData() != null) {
+                        this.currentReport = resource.getData();
                         binding.scrollViewReport.setVisibility(View.VISIBLE);
                         binding.layoutEmptyState.setVisibility(View.GONE);
                         updateUI(resource.getData());
                     } else {
+                        this.currentReport = null;
                         showEmptyState();
                     }
                     break;
@@ -153,9 +170,5 @@ public class ReportsActivity extends BaseActivity {
         LayoutDashboardCardBinding cardBinding = LayoutDashboardCardBinding.bind(cardView);
         cardBinding.tvCardLabel.setText(label);
         cardBinding.tvCardValue.setText(value);
-    }
-
-    private void shareReport(String format) {
-        Toast.makeText(this, "Sharing report as " + format.toUpperCase(), Toast.LENGTH_SHORT).show();
     }
 }

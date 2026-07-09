@@ -3,25 +3,47 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Fintech Palette -->
+    <!-- Brand Fintech Palette (Light) -->
     <color name="primary_purple">#6750A4</color>
     <color name="primary_purple_variant">#4F378B</color>
     <color name="accent_green">#22C55E</color>
     <color name="accent_green_variant">#15803D</color>
-    <color name="splash_bg">#F8F9FF</color>
-    <color name="card_bg">#FFFFFF</color>
-    <color name="text_primary">#1E293B</color>
-    <color name="text_secondary">#64748B</color>
-    <color name="text_muted">#94A3B8</color>
+
+    <color name="light_bg">#F8F9FF</color>
+    <color name="light_surface">#FFFFFF</color>
+    <color name="light_text_primary">#1E293B</color>
+    <color name="light_text_secondary">#64748B</color>
+    <color name="light_text_muted">#94A3B8</color>
+    <color name="light_border">#E2E8F0</color>
+
+    <!-- Legacy Aliases for Compatibility -->
+    <color name="border_light">@color/light_border</color>
+    <color name="text_secondary">@color/light_text_secondary</color>
+    <color name="gradient_start">@color/tonal_purple</color>
+    <color name="gradient_end">@color/light_bg</color>
+    <color name="text_primary">@color/light_text_primary</color>
+    <color name="text_muted">@color/light_text_muted</color>
+    <color name="splash_bg">@color/light_bg</color>
+    <color name="card_bg">@color/light_surface</color>
+
+    <!-- Brand Fintech Palette (Dark) -->
+    <color name="dark_bg">#0F172A</color>
+    <color name="dark_surface">#1E293B</color>
+    <color name="dark_text_primary">#F1F5F9</color>
+    <color name="dark_text_secondary">#94A3B8</color>
+    <color name="dark_text_muted">#64748B</color>
+    <color name="dark_border">#334155</color>
 
     <!-- UI Helpers -->
-    <color name="border_light">#E2E8F0</color>
     <color name="success_bg">#DCFCE7</color>
     <color name="error_bg">#FEE2E2</color>
     <color name="warning_bg">#FEF3C7</color>
     <color name="info_bg">#E0F2FE</color>
 
-    <!-- Gradient Colors -->
-    <color name="gradient_start">#F3E8FF</color> <!-- Very subtle purple -->
-    <color name="gradient_end">#F8F9FF</color>
+    <color name="success_text">#15803D</color>
+    <color name="error_text">#991B1B</color>
+
+    <!-- Gradient / Surface Tonal Colors -->
+    <color name="tonal_purple">#F3E8FF</color>
+    <color name="tonal_purple_dark">#2E2344</color>
 </resources>

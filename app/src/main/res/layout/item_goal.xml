@@ -7,7 +7,7 @@
     android:layout_marginHorizontal="20dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/border_light"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,7 +20,7 @@
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/tvGoalPercentage"
             app:layout_constraintStart_toStartOf="parent"
@@ -32,7 +32,7 @@
             style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/primary_purple"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -48,38 +48,45 @@
             app:layout_constraintTop_toBottomOf="@id/tvGoalTitle"
             app:trackCornerRadius="4dp"
             app:trackThickness="10dp"
-            app:indicatorColor="@color/primary_purple"
-            app:trackColor="@color/border_light" />
+            app:indicatorColor="?attr/colorPrimary"
+            app:trackColor="?attr/colorOutline" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvSavedInfo"
             style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:textColor="@color/text_primary"
+            android:layout_marginEnd="8dp"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeMaxTextSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/tvTargetInfo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/progressGoal"
             tools:text="Saved: ₹15,000" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvTargetInfo"
             style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_muted"
+            android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tvSavedInfo"
             tools:text="Goal: ₹45,000" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvRemainingInfo"
             style="@style/TextAppearance.Material3.LabelSmall"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="@color/text_secondary"
+            android:layout_marginEnd="8dp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toStartOf="@+id/tvTargetDateInfo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvSavedInfo"
             tools:text="₹30,000 left to save" />
@@ -89,7 +96,7 @@
             style="@style/TextAppearance.Material3.LabelSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_muted"
+            android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tvRemainingInfo"
             tools:text="By 12 Dec 2024" />
@@ -99,7 +106,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
-            android:background="@color/border_light"
+            android:background="?attr/colorOutline"
             app:layout_constraintTop_toBottomOf="@id/tvRemainingInfo" />
 
         <LinearLayout
@@ -115,8 +122,7 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Savings"
-                android:textColor="@color/primary_purple" />
+                android:text="Add Savings" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDeleteGoal"
@@ -124,7 +130,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Delete"
-                android:textColor="#E11D48" />
+                android:textColor="@color/error_text" />
         </LinearLayout>
 
         <com.google.android.material.textview.MaterialTextView
@@ -136,7 +142,7 @@
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
             android:text="COMPLETED"
-            android:textColor="@color/accent_green_variant"
+            android:textColor="@color/success_text"
             android:textStyle="bold"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/tvGoalTitle"

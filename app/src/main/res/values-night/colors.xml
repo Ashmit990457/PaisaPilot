@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Override legacy aliases for Dark Mode -->
+    <color name="border_light">@color/dark_border</color>
+    <color name="text_secondary">@color/dark_text_secondary</color>
+    <color name="gradient_start">@color/tonal_purple_dark</color>
+    <color name="gradient_end">@color/dark_bg</color>
+    <color name="text_primary">@color/dark_text_primary</color>
+    <color name="text_muted">@color/dark_text_muted</color>
+    <color name="splash_bg">@color/dark_bg</color>
+    <color name="card_bg">@color/dark_surface</color>
+
+    <!-- UI Helpers with Dark Context -->
+    <color name="success_bg">#1B2E1D</color> <!-- Darker Green -->
+    <color name="error_bg">#2D161B</color>   <!-- Darker Red -->
+    <color name="warning_bg">#2D2316</color> <!-- Darker Amber -->
+    <color name="info_bg">#16242D</color>    <!-- Darker Blue -->
+</resources>

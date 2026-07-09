@@ -7,7 +7,7 @@
     android:layout_marginHorizontal="20dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/border_light"
+    app:strokeColor="?attr/colorOutline"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,10 +18,13 @@
         <TextView
             android:id="@+id/tvForecastTitle"
             style="@style/TextAppearance.Material3.TitleMedium"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:text="Financial Forecast"
+            android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/chipSpendingStatus"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -33,18 +36,18 @@
             app:chipStrokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:chipBackgroundColor="@color/success_bg"
-            tools:text="SAFE" />
+            tools:text="HIGH" />
 
         <TextView
             android:id="@+id/tvForecastSubtitle"
             style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Based on your current month's spending trend"
-            android:textColor="@color/text_secondary"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvForecastTitle" />
+            app:layout_constraintTop_toBottomOf="@id/chipSpendingStatus" />
 
         <LinearLayout
             android:id="@+id/ll_forecast_metrics"
@@ -66,16 +69,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="DAILY AVERAGE"
-                    android:textColor="@color/text_muted" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvAverageDailySpend"
                     style="@style/TextAppearance.Material3.TitleLarge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="12sp"
+                    app:autoSizeMaxTextSize="22sp"
                     tools:text="₹104.20" />
             </LinearLayout>
 
@@ -83,6 +89,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:layout_marginStart="12dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -90,16 +97,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="PROJECTED TOTAL"
-                    android:textColor="@color/text_muted" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <TextView
+                <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/tvProjectedExpense"
                     style="@style/TextAppearance.Material3.TitleLarge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textStyle="bold"
+                    app:autoSizeTextType="uniform"
+                    app:autoSizeMinTextSize="12sp"
+                    app:autoSizeMaxTextSize="22sp"
                     tools:text="₹3,230" />
             </LinearLayout>
 
@@ -118,16 +128,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FORECASTED SAVINGS"
-                android:textColor="@color/text_muted" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <TextView
+            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvProjectedSavings"
                 style="@style/TextAppearance.Material3.HeadlineSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:textColor="@color/accent_green"
+                android:textColor="?attr/colorPrimary"
                 android:textStyle="bold"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="16sp"
+                app:autoSizeMaxTextSize="24sp"
                 tools:text="₹16,770" />
         </LinearLayout>
 
@@ -136,7 +149,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="16dp"
-            android:background="@color/border_light"
+            android:background="?attr/colorOutline"
             app:layout_constraintTop_toBottomOf="@id/ll_savings_forecast" />
 
         <TextView
@@ -146,9 +159,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:drawablePadding="8dp"
-            android:textColor="@color/text_primary"
+            android:textColor="?attr/colorOnSurface"
             app:drawableStartCompat="@android:drawable/ic_menu_info_details"
-            app:drawableTint="@color/primary_purple"
+            app:drawableTint="?attr/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vForecastDivider"
@@ -161,7 +174,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Forecasts are calculated using your average daily spending this month and automatically update as you record more expenses."
-            android:textColor="@color/text_muted"
+            android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintTop_toBottomOf="@id/tvForecastRecommendation" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
