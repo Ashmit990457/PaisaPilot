@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
@@ -13,6 +12,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -21,8 +21,6 @@ import com.example.paisapilot.databinding.ActivityReceiptScannerBinding;
 import com.example.paisapilot.model.ReceiptResult;
 import com.example.paisapilot.utils.ImageCompressor;
 import com.example.paisapilot.viewmodel.ReceiptViewModel;
-
-import java.util.Locale;
 
 public class ReceiptScannerActivity extends AppCompatActivity {
 
@@ -77,6 +75,18 @@ public class ReceiptScannerActivity extends AppCompatActivity {
         });
 
         observeViewModel();
+        checkConfig();
+    }
+
+    private void checkConfig() {
+        if (!viewModel.isApiKeyConfigured()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("API Key Not Configured")
+                    .setMessage("Gemini AI features require an API key. Please add GEMINI_API_KEY to your local.properties and sync the project.")
+                    .setPositiveButton("OK", (dialog, which) -> finish())
+                    .setCancelable(false)
+                    .show();
+        }
     }
 
     private void checkPermissionAndCamera() {
@@ -115,7 +125,11 @@ public class ReceiptScannerActivity extends AppCompatActivity {
                     break;
                 case ERROR:
                     binding.layoutProcessing.setVisibility(View.GONE);
-                    Toast.makeText(this, "AI Analysis Failed: " + resource.getMessage(), Toast.LENGTH_LONG).show();
+                    new AlertDialog.Builder(this)
+                            .setTitle("AI Analysis Failed")
+                            .setMessage(resource.getMessage())
+                            .setPositiveButton("Retry", null)
+                            .show();
                     break;
             }
         });
