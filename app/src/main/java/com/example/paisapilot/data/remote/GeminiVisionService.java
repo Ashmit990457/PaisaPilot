@@ -11,13 +11,14 @@ public class GeminiVisionService {
     private final GenerativeModelFutures model;
 
     public GeminiVisionService(String apiKey) {
+        // Using the standard stable model alias for vision tasks.
         GenerativeModel gm = new GenerativeModel("gemini-1.5-flash", apiKey);
         this.model = GenerativeModelFutures.from(gm);
     }
 
     public ListenableFuture<GenerateContentResponse> extractReceiptData(Bitmap bitmap) {
         String prompt = "Extract receipt information into this exact JSON format. " +
-                "Return ONLY the raw JSON string, no markdown code blocks, no backticks, no explanation. " +
+                "Return ONLY the raw JSON string, no markdown. " +
                 "JSON format: " +
                 "{\"merchant\":\"string\", \"title\":\"string\", \"amount\":number, \"currency\":\"string\", " +
                 "\"category\":\"string\", \"paymentMethod\":\"string\", \"date\":\"YYYY-MM-DD\", " +

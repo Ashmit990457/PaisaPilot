@@ -11,7 +11,7 @@ val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
-val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: "YOUR_API_KEY"
+val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY")?.trim() ?: "YOUR_API_KEY"
 
 android {
     namespace = "com.example.paisapilot"
